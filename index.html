@@ -511,6 +511,9 @@ body:not([data-tab="bus"]) .mast-strip{margin-top:18px}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:transparent}
 .tab[aria-selected="true"]::after{transform:scaleX(1)}
 .tab svg{flex:none}
+.tab-enlace{font:600 15px var(--sans);padding:15px 16px 14px;color:var(--seal);text-decoration:none;white-space:nowrap;display:inline-flex;gap:8px;align-items:center;min-height:48px}
+.tab-enlace:hover{text-decoration:underline;text-underline-offset:.2em}
+.tab-enlace:focus-visible{outline:2px solid var(--seal);outline-offset:-3px}
 @media(max-width:960px){.tabs{margin:0;padding:0 10px}}
 
 /* ---------------- inicio: buscador ---------------- */
@@ -888,6 +891,7 @@ body[data-tab="bus"] .mast-in{padding-bottom:34px}
   <button class="tab" id="tab-indice" role="tab" aria-selected="false" aria-controls="pane-indice">Índice</button>
   <button class="tab" id="tab-dig" role="tab" aria-selected="false" aria-controls="pane-dig">Digesto oficial</button>
   <button class="tab" id="tab-estad" role="tab" aria-selected="false" aria-controls="pane-estad">Estadística</button>
+  <a class="tab-enlace" href="autoridades.html" title="Presidentes municipales, intendentes, interinos y comisionados de San Andrés de Giles, 1870-2026">Historia de nuestras autoridades <span aria-hidden="true">→</span></a>
   <button class="tab" id="tab-ed" role="tab" aria-selected="false" aria-controls="pane-ed"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>Edición</button>
 </div></nav>
 <div id="contenido"></div>
