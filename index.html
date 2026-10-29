@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es-AR">
-<head>
+<head><script>window.__hashInicial=location.hash;</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="favicon.ico?v=2" sizes="32x32">
@@ -895,6 +895,7 @@ body[data-tab="bus"] .mast-in{padding-bottom:34px}
   <button class="tab" id="tab-dig" role="tab" aria-selected="false" aria-controls="pane-dig">Digesto oficial</button>
   <button class="tab" id="tab-estad" role="tab" aria-selected="false" aria-controls="pane-estad">Estadística</button>
   <a class="tab-enlace" href="autoridades.html" title="Presidentes municipales, intendentes, interinos y comisionados de San Andrés de Giles, 1870-2026">Historia de nuestras autoridades <span aria-hidden="true">→</span></a>
+  <a class="tab-enlace" href="decretos.html" title="Digesto normativo y registro completo de los decretos del Departamento Ejecutivo publicados en el SIBOM, 2017-2026">Decretos del Ejecutivo <span aria-hidden="true">→</span></a>
   <button class="tab" id="tab-ed" role="tab" aria-selected="false" aria-controls="pane-ed"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>Edición</button>
 </div></nav>
 <div id="contenido"></div>
@@ -4053,6 +4054,17 @@ window.__edIr=function(p){
 };
 window.__edAbierto=abierto;
 abierto()?vistaEditor():vistaClave();
+})();
+</script>
+<script>
+/* Enlace directo a una ordenanza: index.html#ord-2063 abre su ficha (usado por decretos.html) */
+(function(){
+  function ir(e){ var h=(e&&e.type==='hashchange')?location.hash:(location.hash||window.__hashInicial||''); var m=h.match(/^#ord-(\d+)(?:-(\d{4}))?$/); if(!m) return; var yy=m[2]?+m[2]:null;
+    var n=+m[1], G=window.__DG; if(!G||!window.__ficha){ return setTimeout(function(){ir(e)},300); } window.__hashInicial='';
+    var ix=-1, best=-1; G.D.forEach(function(r,i){ if(r.t==='ord'&&r.n===n){ var sc=(yy&&r.y===yy)?99999:(r.y||0); if(sc>best){ best=sc; ix=i; } } });
+    if(ix>=0){ if(window.__irTab) window.__irTab('idx'); window.__ficha(ix); } }
+  window.addEventListener('hashchange', ir);
+  if(document.readyState==='complete') setTimeout(ir,400); else window.addEventListener('load', function(){ setTimeout(ir,400); });
 })();
 </script>
 </body>
