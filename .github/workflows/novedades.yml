@@ -33,6 +33,9 @@ jobs:
       - run: pip install pypdf
       - name: Leer ordenanzas nuevas, consultar el sitio del H.C.D. y el Boletín Oficial Municipal
         run: python herramientas/actualizar_novedades.py
+      - name: Control del lector de decretos (sólo al correrla a mano)
+        if: github.event_name == 'workflow_dispatch'
+        run: python herramientas/actualizar_decretos.py --probar 15861
       - name: Sumar los decretos de los boletines nuevos al Digesto de Decretos
         run: python herramientas/actualizar_decretos.py
       - name: Publicar si hubo cambios

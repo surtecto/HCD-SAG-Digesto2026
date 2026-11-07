@@ -149,7 +149,9 @@ def boletines_nuevos(D):
 def leer_boletin(bid):
     bh = AN.traer(f'{AN.SIBOM}/bulletins/{bid}')
     out = []
-    for cid in dict.fromkeys(re.findall(rf'/bulletins/{bid}/contents/(\d+)', bh)):
+    cids = list(dict.fromkeys(re.findall(rf'/bulletins/{bid}/contents/(\d+)', bh)))
+    leer_boletin.piezas = len(cids)
+    for cid in cids:
         try:
             t = re.sub(r'\s+', ' ', AN.texto_html(AN.traer(f'{AN.SIBOM}/bulletins/{bid}/contents/{cid}')))
         except Exception:
@@ -169,6 +171,16 @@ def leer_boletin(bid):
 
 def main():
     s, D = leer()
+    if '--probar' in sys.argv:
+        bid = sys.argv[sys.argv.index('--probar') + 1]; modelo = entrenar(D['R'])
+        xs = leer_boletin(bid); print(f'boletín {bid}: {leer_boletin.piezas} piezas, {len(xs)} decretos reconocidos')
+        idx = {(r[0], r[1]): r for r in D['R']}; ok = n = 0
+        for x in xs:
+            sub = modelo.predecir(x['v'] + ' ' + x['a1']); r = idx.get((x['n'], x['y']))
+            if r: n += 1; ok += (D['subOf'][sub] == r[3])
+        print(f'  tema coincide con el relevamiento en {ok} de {n}; alcance general: {sum(1 for x in xs if normativo(x["a1"]))}')
+        for x in xs[:3]: print('  ', x['n'], x['y'], x['f'], '|', x['v'][:70], '|', D['subs'][modelo.predecir(x['v'] + ' ' + x['a1'])])
+        return
     if '--verificar' in sys.argv:
         import copy
         antes = copy.deepcopy(D['an']); analizar(D)
@@ -187,7 +199,11 @@ def main():
         modelo = entrenar(D['R']); sumas = sumillas_digesto()
         conocidos = {(r[0], r[1]) for r in D['R']}
         for num, fecha, bid in nuevos:
-            decs = [x for x in leer_boletin(bid) if (x['n'], x['y']) not in conocidos]
+            todos = leer_boletin(bid)
+            if leer_boletin.piezas and not todos:
+                print(f'  aviso: el boletín {num}º tiene {leer_boletin.piezas} piezas pero no se reconoció ningún decreto; se reintenta mañana')
+                continue
+            decs = [x for x in todos if (x['n'], x['y']) not in conocidos]
             for x in decs:
                 sub = modelo.predecir(x['v'] + ' ' + x['a1']); tema = D['subOf'][sub]
                 au = autoridad(x['f'])
