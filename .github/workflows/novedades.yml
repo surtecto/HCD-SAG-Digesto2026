@@ -11,6 +11,7 @@ on:
       - 'novedades/ordenanzas/**'
       - 'novedades/relaciones.json'
       - 'herramientas/actualizar_novedades.py'
+      - 'herramientas/actualizar_decretos.py'
   workflow_dispatch:
 
 permissions:
@@ -32,11 +33,13 @@ jobs:
       - run: pip install pypdf
       - name: Leer ordenanzas nuevas, consultar el sitio del H.C.D. y el Boletín Oficial Municipal
         run: python herramientas/actualizar_novedades.py
+      - name: Sumar los decretos de los boletines nuevos al Digesto de Decretos
+        run: python herramientas/actualizar_decretos.py
       - name: Publicar si hubo cambios
         run: |
           git config user.name  "Digesto Gilense (automático)"
           git config user.email "actions@users.noreply.github.com"
-          git add digesto-novedades.js novedades/estado-sibom.json novedades/hcd-cache.json
+          git add digesto-novedades.js novedades/estado-sibom.json novedades/hcd-cache.json decretos.html
           if git diff --cached --quiet; then
             echo "Sin cambios."
           else

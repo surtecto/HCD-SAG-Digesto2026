@@ -1,0 +1,86 @@
+<style id="dec-capa-css">
+/* ---- estado del registro y cifras clave (capa 2026-11) ---- */
+.facts{display:none!important}
+#v-analisis #kpis{display:none}
+.estado{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:center;margin:6px 0 2px;padding:12px 16px;border-radius:10px;
+  background:var(--ok-soft);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent)}
+.estado.mal{background:var(--seal-soft);border-color:color-mix(in srgb,var(--seal) 40%,transparent)}
+.estado .pulso{width:12px;height:12px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 50%,transparent);animation:pulso 2.4s infinite;grid-row:span 2}
+.estado.mal .pulso{background:var(--seal)}
+@keyframes pulso{70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.estado .t{font:700 14.5px var(--sans);color:var(--ink)}
+.estado dl{display:flex;flex-wrap:wrap;gap:4px 22px;margin:0;font-size:13px;color:var(--ink-2)}
+.estado dl div{display:flex;gap:6px;align-items:baseline}
+.estado dt{color:var(--ink-3)}
+.estado dd{margin:0;font-family:var(--mono);color:var(--ink)}
+.estado dd.w{color:var(--seal);font-weight:600}
+.cifras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:8px 0 2px}
+.cifra{background:var(--ground);border:1px solid var(--rule);border-radius:10px;padding:14px 16px 12px;position:relative;overflow:hidden}
+.cifra::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.cifra b{display:block;font:700 clamp(28px,3.4vw,40px)/1 var(--serif);font-variant-numeric:tabular-nums;color:var(--ink)}
+.cifra span{display:block;font-size:13px;line-height:1.4;color:var(--ink-2);margin-top:6px}
+.cifra small{display:block;font:500 11.5px var(--mono);color:var(--ink-3);margin-top:6px}
+nav.tabs a{display:inline-flex;align-items:center;gap:7px}
+nav.tabs a svg{width:16px;height:16px;flex:none;opacity:.8}
+/* hallazgos al tope del análisis */
+.hallazgos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.hallazgo{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;border-top:3px solid var(--accent)}
+.hallazgo h4{font:600 18px/1.25 var(--serif);margin:0 0 6px;color:var(--ink)}
+.hallazgo p{margin:0;font-size:14px;line-height:1.55;color:var(--ink-2)}
+.hallazgo p.mas{display:none}
+.hallazgo.abierto p.mas{display:block;margin-top:8px}
+.hallazgo button{margin-top:10px;background:none;border:0;padding:0;font:600 12.5px var(--sans);color:var(--accent);cursor:pointer}
+.sec-t{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.sec-t h2{font:500 italic 26px var(--serif);margin:0}
+.sec-t span{font:700 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+@media(max-width:860px){.cifras{grid-template-columns:1fr 1fr}.hallazgos{grid-template-columns:1fr}.estado{grid-template-columns:1fr}.estado .pulso{display:none}}
+@media (prefers-reduced-motion:reduce){.estado .pulso{animation:none}}
+</style>
+<script id="dec-capa-js">
+(function(){
+const D=window.__DEC; if(!D) return;
+const $=id=>document.getElementById(id), nf=new Intl.NumberFormat('es-AR');
+const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const fd=iso=>{ if(!iso) return '—'; const [y,m,d]=iso.slice(0,10).split('-'); return `${+d}/${+m}/${y}`; };
+const fm=iso=>iso?`${MES[+iso.slice(5,7)-1]} de ${iso.slice(0,4)}`:'—';
+const A=D.act||{}, C=A.consulta||{};
+const meses=A.firmados_hasta?Math.round((Date.now()-new Date(A.firmados_hasta+'T12:00:00'))/(864e5*30.4)):null;
+const ok=C.ok!==false;
+/* estado del registro */
+const est=document.createElement('div'); est.className='estado'+(ok?'':' mal'); est.setAttribute('role','status');
+est.innerHTML=`<span class="pulso" aria-hidden="true"></span>
+  <div class="t">${ok?'Se actualiza solo: el Boletín Oficial se revisa todos los días':'La última consulta al Boletín Oficial no tuvo respuesta; se reintenta mañana'}</div>
+  <dl><div><dt>Último boletín incorporado</dt><dd>${A.ultimo_boletin||'—'}</dd></div>
+      <div><dt>Decretos firmados hasta</dt><dd>${fm(A.firmados_hasta)}</dd></div>
+      <div><dt>Demora del Boletín</dt><dd class="${meses>2?'w':''}">${meses!=null?'≈ '+meses+' meses':'—'}</dd></div>
+      <div><dt>Registro actualizado</dt><dd>${fd(A.actualizado)}</dd></div>
+      <div><dt>Consultado</dt><dd>${fd(C.fecha)}</dd></div></dl>`;
+const facts=$('facts'); facts.parentNode.insertBefore(est,facts);
+/* cifras clave */
+const k=D.an.kpis, COLS=['var(--accent)','var(--c1)','var(--c2)','var(--seal)'];
+const cf=document.createElement('div'); cf.className='cifras';
+const items=[[k[0][0],'decretos del Ejecutivo registrados',`${D.rango} · ${k[1][0]} por mes`],[k[2][0],'son ayudas sociales y subsidios','la mayor parte del registro'],
+  [k[3][0],'se refieren al personal municipal','designaciones, temporarios, licencias'],[k[4][0],'tienen alcance general',k[4][1].replace(/^decretos de alcance general /,'').replace(/[()]/g,'')]];
+cf.innerHTML=items.map((x,i)=>`<div class="cifra" style="--c:${COLS[i]}"><b>${x[0]}</b><span>${x[1]}</span><small>${x[2]}</small></div>`).join('');
+facts.parentNode.insertBefore(cf,facts);
+/* resumen del bloque de alcance: que diga la verdad sobre la actualización */
+const alc=$('alc');
+if(alc){ const s=alc.querySelector('summary > span:not(.k):not(.ab)'); if(s) s.innerHTML=`Actualizado el <b>${fd(A.actualizado)}</b> · decretos publicados en el SIBOM, firmados entre julio de 2017 y ${fm(A.firmados_hasta)} · <span class="w">vacío en 2019 y demora de ≈ ${meses} meses</span>`;
+  alc.querySelectorAll('li').forEach(li=>{ if(/No se actualiza solo/.test(li.textContent)) li.innerHTML='<b>Se actualiza solo.</b> Todos los días se revisa el Boletín: cada boletín nuevo suma sus decretos, que se clasifican por tema con un modelo entrenado sobre los ya relevados (acierta el tema en 92 de cada 100 en una prueba sobre 1.500 decretos) y se recalcula el análisis. Las promulgaciones y vetos también se ven en <a href="index.html#nov">Novedades del Digesto</a>.';
+    if(/Demora del Boletín/.test(li.textContent)) li.innerHTML=`<b>Demora del Boletín:</b> el último boletín trae decretos firmados hasta ${fm(A.firmados_hasta)}. Lo firmado después todavía no está publicado y por eso no figura acá: el registro está al día con el Boletín, no con la firma.`; }); }
+/* íconos en pestañas */
+const I={normativo:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12.5h6M9 15.5h6M9 18.5h3.5"/>',registro:'<rect x="3.5" y="4.5" width="17" height="15" rx="1.6"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>',
+  analisis:'<path d="M4 20h16"/><path d="M7 17v-5M12 17V6.5M17 17V9.5"/>',fuentes:'<rect x="3.5" y="5" width="17" height="15" rx="1.6"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>'};
+document.querySelectorAll('nav.tabs a[data-v]').forEach(a=>{ const p=I[a.dataset.v]; if(p&&!a.querySelector('svg')) a.insertAdjacentHTML('afterbegin',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`); });
+/* hallazgos: al principio del análisis, en tarjetas */
+const sec=$('v-analisis'), preg=$('preg');
+if(sec&&preg){ const box=document.createElement('div');
+  box.innerHTML=`<div class="sec-t"><h2>Lo que muestran los datos</h2><span>${D.an.preguntas.length} hallazgos</span></div><div class="hallazgos">`+
+    D.an.preguntas.map(p=>{ const m=p.match(/^<b>(.*?)<\/b>\s*(.*)$/s); const tit=m?m[1]:'', cuerpo=m?m[2]:p;
+      const i=cuerpo.search(/\.\s/); const ini=i>0?cuerpo.slice(0,i+1):cuerpo, mas=i>0?cuerpo.slice(i+1).trim():'';
+      return `<div class="hallazgo"><h4>${tit}</h4><p>${ini}</p>${mas?`<p class="mas">${mas}</p><button type="button">Leer más</button>`:''}</div>`; }).join('')+'</div>';
+  const intro=sec.querySelector('.intro'); (intro||sec.firstChild).after(box);
+  box.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const h=b.closest('.hallazgo'); h.classList.toggle('abierto'); b.textContent=h.classList.contains('abierto')?'Leer menos':'Leer más'; });
+  const pp=preg.closest('.panel'); if(pp) pp.hidden=true; }
+})();
+</script>
