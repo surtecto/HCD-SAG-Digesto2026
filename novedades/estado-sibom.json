@@ -127,5 +127,6 @@
   "fecha": "2026-11-07T13:23",
   "ok": true
  },
- "decretos": {}
+ "decretos": {},
+ "decretos_hasta": "2026-06-29"
 }

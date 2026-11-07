@@ -119,11 +119,39 @@ footer .wrap{padding-block:18px 28px}
 @media (prefers-reduced-motion:no-preference){ .card,.panel{animation:in .35s ease both} @keyframes in{from{transform:translateY(4px)}to{transform:none}} }
 </style>
 
+<style id="alc-css">
+.alc{margin:10px 0 4px;border:1px solid var(--rule,#d6ccb6);border-left:3px solid var(--accent,#1E3F66);background:var(--surface,#fff);font-size:13px}
+.alc>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:8px 12px}
+.alc>summary::-webkit-details-marker{display:none}
+.alc .k{font-weight:700;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#1E3F66)}
+.alc .w{color:#A23B22;font-weight:600}
+.alc .ab{margin-left:auto;font-weight:600}
+.alc .ab::after{content:" ▾"}.alc[open] .ab::after{content:" ▴"}
+.alc ul{margin:0;padding:6px 14px 14px 30px;display:grid;gap:6px;max-width:100ch;line-height:1.5}
+</style>
 </head><body><header class="top"><div class="wrap">
   <div class="eyebrow">Municipalidad de San Andrés de Giles · Departamento Ejecutivo</div>
   <h1>Digesto de Decretos <em>del Ejecutivo</em></h1>
   <p class="lede">Los decretos del Intendente publicados en el Boletín Oficial Municipal (SIBOM), ordenados en dos lecturas: el <b>digesto normativo</b>, con los decretos de alcance general, y el <b>registro completo</b>, con cada decreto clasificado por tema para analizar la acción administrativa.</p>
   <div class="facts" id="facts"></div>
+  <details class="alc" id="alc"><summary><span class="k">Actualización y alcance</span>
+    <span>Actualizado el <b>29/10/2026</b> · decretos del Ejecutivo publicados en el SIBOM, firmados entre julio de 2017 y junio de 2026 · <span class="w">vacíos en 2019 y desde julio de 2026</span></span><span class="ab">Ver qué cubre</span></summary>
+  <ul>
+    <li><b>Fuente:</b> Boletín Oficial Municipal (SIBOM, municipio 111), boletines 1º (3/7/2017) a 120º (21/10/2026). 31.403 decretos distintos y 2.780 resoluciones del D.E.; el texto completo se leyó en 9.142 decretos. El sitio de la Municipalidad no publica otros decretos.</li>
+    <li><b>Antes de julio de 2017</b> no hay decretos del Ejecutivo publicados en la web: el Digesto los cita pero no tiene su texto.</li>
+    <li><b>2019:</b> falta agosto completo y parte de julio (numeración incompleta en el Boletín). El resto de los años está prácticamente completo (≈99 % de la numeración).</li>
+    <li><b>Demora del Boletín:</b> el boletín de octubre de 2026 trae decretos de junio. Lo firmado después de junio de 2026 todavía no está publicado y por eso no figura acá. <span id="alc-nuevos"></span></li>
+    <li><b>No se actualiza solo.</b> Este registro es un relevamiento cerrado al 29/10/2026. Las promulgaciones y vetos de ordenanzas nuevas sí se siguen todos los días en la pestaña <a href="index.html#nov">Novedades del Digesto</a>.</li>
+    <li><b>Clasificación automática</b> por etiqueta del SIBOM, visto y artículo 1º; en una muestra manual acertó 36 de 40. Conviene leer el texto al citar un decreto puntual.</li>
+  </ul></details>
+<script>
+(function(){ var r=document.getElementById('relev'); if(r&&!r.textContent.trim()) r.textContent='29/10/2026';
+  try{ fetch('novedades/estado-sibom.json',{cache:'no-store'}).then(function(x){return x.ok?x.json():null;}).then(function(j){ if(!j) return;
+    var n=(j.boletines_revisados||[]).length, e=document.getElementById('alc-nuevos');
+    if(e) e.textContent = n>120 ? ('Desde entonces se publicaron '+(n-120)+' boletines más (último: '+j.ultimo_boletin+'), que este registro todavía no incluye.')
+                                : ('Consultado el '+String((j.ultima_consulta||{}).fecha||'').slice(0,10).split('-').reverse().join('/')+': no hay boletines nuevos desde el 120º.'); }).catch(function(){}); }catch(e){}
+})();
+</script>
   <div class="enl"><a href="index.html">← Digesto Gilense (H.C.D.)</a><a href="autoridades.html">Historia de nuestras autoridades</a></div>
   <nav class="tabs" aria-label="Secciones">
     <a href="#normativo" data-v="normativo">Digesto normativo<span class="k" id="k-norm"></span></a>

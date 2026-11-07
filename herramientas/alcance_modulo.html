@@ -1,0 +1,165 @@
+<style id="alc-css">
+/* ---------------- actualización y alcance (en cada sección) ---------------- */
+.alc{margin:0 0 22px;border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--surface);font-size:13.5px}
+#pane-bus .alc{margin:22px 0 0}
+#pane-indice .alc{margin:0 0 16px}
+.alc>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:10px 14px 10px 16px}
+.alc>summary::-webkit-details-marker{display:none}
+.alc>summary:focus-visible{outline:2px solid var(--seal);outline-offset:-2px}
+.alc .k{font:700 10.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.alc .r{color:var(--ink-2)}
+.alc .r b{color:var(--ink);font-weight:600}
+.alc .w{color:var(--miss);font-weight:600}
+.alc .ab{margin-left:auto;font:600 12.5px var(--sans);color:var(--ink);white-space:nowrap}
+.alc .ab::after{content:" ▾";color:var(--ink-3)}
+.alc[open] .ab::after{content:" ▴"}
+.alc-in{padding:4px 16px 18px;border-top:1px solid var(--rule-2);display:grid;gap:20px}
+.alc h4{font:700 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:12px 0 8px}
+.alc-sec{font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink);max-width:88ch;margin:0}
+.alc-f{width:100%;border-collapse:collapse}
+.alc-f th,.alc-f td{text-align:left;vertical-align:top;padding:7px 10px 7px 0;border-bottom:1px dashed var(--rule);line-height:1.45}
+.alc-f th{font:700 10.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.alc-f td:first-child{font-weight:600;min-width:170px}
+.alc-f .d{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.alc-f .viejo{color:var(--miss)}
+.alc-g{display:grid;grid-template-columns:160px repeat(var(--ny),minmax(0,1fr)) 92px;gap:2px;align-items:center}
+.alc-g .t{font-size:12.5px;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alc-g i{display:block;height:16px;background:var(--c);opacity:var(--o);border-radius:1px}
+.alc-g i.z{background:repeating-linear-gradient(135deg,var(--miss) 0 2px,transparent 2px 5px);opacity:.55}
+.alc-g i.f{background:transparent;border:1px dashed var(--rule)}
+.alc-g .p{font:500 11px var(--mono);color:var(--ink-3);padding-left:8px;white-space:nowrap}
+.alc-g .y{font:500 10px var(--mono);color:var(--ink-3);text-align:left;white-space:nowrap;overflow:visible}
+.alc-ley{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--ink-3);margin-top:8px}
+.alc-ley span{display:inline-flex;align-items:center;gap:6px}
+.alc-ley i{display:inline-block;width:14px;height:10px}
+.alc-v{margin:0;padding-left:1.1em;display:grid;gap:6px;max-width:92ch}
+.alc-v li{line-height:1.5}
+.alc-v li b{font-weight:600}
+@media(max-width:760px){
+  .alc-g{grid-template-columns:90px repeat(var(--ny),minmax(0,1fr)) 64px}
+  .alc-g .t{font-size:11px}.alc-g i{height:13px}
+  .alc-f td:first-child{min-width:110px}
+  .alc .ab{margin-left:0}
+}
+</style>
+<script>
+/* ===================== actualización y alcance de cada sección ===================== */
+(function(){
+const G=window.__DG; if(!G) return;
+const D=G.D, N=window.__DIGESTO_NOVEDADES||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nf=new Intl.NumberFormat('es-AR');
+const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const fd=iso=>{ if(!iso) return '—'; const [y,m,d]=String(iso).slice(0,10).split('-'); return `${+d}/${+m}/${y}`; };
+const fm=iso=>{ if(!iso) return '—'; const [y,m]=String(iso).slice(0,10).split('-'); return `${MES[+m-1]} de ${y}`; };
+const hoy=new Date(); const ANIO=hoy.getFullYear();
+const dias=iso=>iso?Math.round((hoy-new Date(String(iso).slice(0,10)+'T12:00:00'))/864e5):null;
+const BASE={rotulo:'septiembre de 2026', piezas:6196, ultOrd:2830};
+const Y0=1984, YS=[]; for(let y=Y0;y<=ANIO;y++) YS.push(y);
+const TIPOS=[['ord','Ordenanzas','var(--ord)'],['res','Resoluciones','var(--res)'],['com','Comunicaciones','var(--com)'],['dec','Decretos del Concejo','var(--dec)'],['act','Actas de sesión','var(--act)']];
+const NOVL=(N.list||[]);
+const nNov=NOVL.length, nDocx=NOVL.filter(e=>e.src==='docx').length, nHcd=NOVL.filter(e=>e.src==='hcd').length;
+
+/* ---- cobertura por tipo y año ---- */
+const COB={};
+TIPOS.forEach(([t])=>{ const c={}, tot={n:0,txt:0,antes:0,min:null,max:null};
+  D.forEach(r=>{ if(r.t!==t) return; tot.n++; if(r.lz||r.tk) tot.txt++;
+    if(r.y){ if(r.y<Y0) tot.antes++; else c[r.y]=(c[r.y]||0)+1; tot.min=tot.min==null?r.y:Math.min(tot.min,r.y); tot.max=tot.max==null?r.y:Math.max(tot.max,r.y); } });
+  const vals=Object.values(c).sort((a,b)=>a-b); const med=vals.length?vals[Math.floor(vals.length/2)]:0;
+  const conN=YS.filter(y=>c[y]); const desde=conN.length?conN[0]:Y0;
+  const ceros=YS.filter(y=>y>=desde&&!c[y]), escasos=YS.filter(y=>y>=desde&&c[y]&&c[y]<med*0.3);
+  COB[t]={c,tot,med,desde,ceros,escasos,mx:Math.max(1,...vals)}; });
+const rangos=a=>{ const o=[]; a.forEach(y=>{ const l=o[o.length-1]; if(l&&y===l[1]+1) l[1]=y; else o.push([y,y]); }); return o; };
+const rtxt=rs=>rs.map(([a,b])=>a===b?String(a):`${a}–${b}`).join(', ');
+/* huecos de numeración de la serie continua de ordenanzas */
+const nums=new Set(D.filter(r=>r.t==='ord'&&r.y>=1993&&r.n).map(r=>r.n));
+const nmin=Math.min(...D.filter(r=>r.t==='ord'&&r.y===1993&&r.n).map(r=>r.n)), nmax=Math.max(...nums);
+const faltan=[]; for(let n=nmin;n<=nmax;n++) if(!nums.has(n)) faltan.push(n);
+const huecos=rangos(faltan);
+const ultOrd=D.filter(r=>r.t==='ord').reduce((a,r)=>(!a||r.n>a.n)?r:a,null);
+
+/* ---- fuentes ---- */
+const H=(N.hcd||{}), S=(N.sibom||{}), HU=H.ultima_publicacion||{};
+const ultDocx=NOVL.filter(e=>e.src==='docx'&&e.fs).map(e=>e.fs).sort().pop();
+function fuentes(){
+  const hc=H.consulta||{}, sc=S.consulta||{};
+  const ho=HU.ord, dO=ho?dias(ho.fecha):null;
+  const rows=[
+    ['Archivo digital del H.C.D.','Copia de '+BASE.rotulo+' (carpeta «HCD Copia 09-2026»)',
+      `Base del Digesto: ${nf.format(BASE.piezas)} piezas, de 1870 a 2026, con texto completo. Llega hasta la Ord. ${BASE.ultOrd}/2026. No se actualiza: es una copia fija.`],
+    ['Sitio del H.C.D.',`Consultado el ${fd(hc.fecha)}${hc.ok===false?' (sin respuesta)':''}`,
+      `Ordenanzas, resoluciones y comunicaciones aprobadas, con el PDF del texto. Se revisa todos los días. Aporta ${nf.format(nHcd)} piezas que faltaban.`
+      +(ho?` Última ordenanza subida: Ord. ${ho.n}${ho.y?'/'+ho.y:''}, el ${fd(ho.fecha)}`+(dO>45?` <span class="w">(hace ${dO} días)</span>`:'')+'.':'')
+      +(HU.res?` Última resolución: ${fd(HU.res.fecha)}.`:'')+(HU.com?` Última comunicación: ${fd(HU.com.fecha)}.`:'')],
+    ['Secretaría del H.C.D. (carga manual)',ultDocx?`Última sesión cargada: ${fd(ultDocx)}`:'—',
+      `${nf.format(nDocx)} ordenanzas entregadas en Word antes de que aparecieran en el sitio del Concejo.`],
+    ['Boletín Oficial Municipal (SIBOM)',`Consultado el ${fd(sc.fecha)}${sc.ok===false?' (sin respuesta)':''}`,
+      `Último boletín: ${esc(S.ultimo_boletin||'—')}. Trae decretos firmados hasta ${fd(S.decretos_hasta)}`
+      +(S.decretos_hasta&&dias(S.decretos_hasta)>60?` <span class="w">(${Math.round(dias(S.decretos_hasta)/30)} meses de demora)</span>`:'')
+      +`. Sólo informa promulgaciones y vetos: el Boletín de Giles no publica ordenanzas.`],
+  ];
+  return `<table class="alc-f"><thead><tr><th>Fuente</th><th>Última actualización</th><th>Qué aporta y hasta dónde llega</th></tr></thead><tbody>`
+    +rows.map(r=>`<tr><td>${r[0]}</td><td class="d">${r[1]}</td><td>${r[2]}</td></tr>`).join('')+'</tbody></table>';
+}
+function grilla(tipos){
+  const ny=YS.length;
+  let h=`<div class="alc-g" style="--ny:${ny}"><span></span>`+YS.map(y=>`<span class="y">${(y%5===0)?y:''}</span>`).join('')+'<span class="p">con texto</span>';
+  tipos.forEach(t=>{ const T=TIPOS.find(x=>x[0]===t), C=COB[t];
+    h+=`<span class="t" title="${esc(T[1])}">${esc(T[1])}</span>`;
+    YS.forEach(y=>{ const n=C.c[y]||0;
+      if(y<C.desde) h+=`<i class="f" title="${y}: fuera de la serie"></i>`;
+      else if(!n) h+=`<i class="z" title="${y}: ningún instrumento en el Digesto"></i>`;
+      else h+=`<i style="--c:${T[2]};--o:${(0.25+0.75*Math.min(1,n/C.mx)).toFixed(2)}" title="${y}: ${n} ${T[1].toLowerCase()}"></i>`; });
+    h+=`<span class="p">${C.tot.n?Math.round(100*C.tot.txt/C.tot.n):0}%</span>`; });
+  return h+`</div><div class="alc-ley"><span><i style="background:var(--ord)"></i>más intenso, más piezas ese año</span>
+    <span><i style="background:repeating-linear-gradient(135deg,var(--miss) 0 2px,transparent 2px 5px)"></i>año sin ninguna pieza</span>
+    <span><i style="border:1px dashed var(--rule)"></i>antes de que empiece la serie</span><span>Pasá el cursor sobre cada año para ver la cantidad.</span></div>`;
+}
+function vacios(tipos){
+  const li=[], pl=(n,s,p)=>nf.format(n)+' '+(n===1?s:p);
+  tipos.forEach(t=>{ const T=TIPOS.find(x=>x[0]===t), C=COB[t]; if(!C.tot.n) return;
+    const ult=C.tot.max, rango=YS.filter(y=>y>=C.desde&&y<=ult), con=rango.filter(y=>C.c[y]);
+    const it=[];
+    if(C.tot.antes) it.push(`${pl(C.tot.antes,'pieza anterior','piezas anteriores')} a ${Y0} (la más antigua, de ${C.tot.min}), sueltas.`);
+    if(rango.length&&con.length/rango.length<0.6) it.push(`serie fragmentaria: hay piezas en ${con.length} de los ${rango.length} años entre ${C.desde} y ${ult} (${rtxt(rangos(con))}).`);
+    else {
+      const z=rangos(C.ceros.filter(y=>y<=ult)); if(z.length) it.push(`años sin ninguna pieza: ${rtxt(z)}.`);
+      const es=C.escasos.filter(y=>y<=ult); if(es.length) it.push(`años con muy pocas piezas (menos de un tercio de lo habitual, ${C.med} por año): ${es.join(', ')}. Puede tratarse de faltantes del archivo.`);
+    }
+    if(ult&&ult<ANIO) it.push(`no hay piezas posteriores a ${ult}`+(t==='dec'?': los decretos de la Presidencia del Concejo se relevaron hasta ese año.':t==='act'?': las actas de sesión posteriores no están en el archivo copiado.':'.'));
+    if(t==='ord'){
+      if(faltan.length) it.push(`en la numeración correlativa desde 1993 faltan ${faltan.length} números: ${rtxt(huecos)}. Algunos pueden no haberse usado nunca; el resto son textos que el archivo no tiene y que se pueden cargar desde Edición.`);
+      it.push(`la última del Digesto es la ${ultOrd?ultOrd.n+'/'+ultOrd.y:'—'}. Lo sancionado después aparece cuando el Concejo lo sube a su sitio o cuando la Secretaría entrega el texto.`);
+    }
+    if(t==='res'||t==='com') it.push('desde 2021 provienen del sitio del Concejo; las que ese sitio no publicó no figuran.');
+    it.forEach(x=>li.push(`<b>${T[1]}</b>: ${x}`));
+  });
+  return li.length?`<ul class="alc-v">${li.map(x=>`<li>${x}</li>`).join('')}</ul>`:'<p class="alc-sec">No se detectan vacíos.</p>';
+}
+const nVac=['ord','res','com'].reduce((a,t)=>a+rangos(COB[t].ceros.filter(y=>y<=COB[t].tot.max)).length+COB[t].escasos.length,0)+huecos.length;
+const SEC={
+  bus:{tipos:['ord','res','com','dec','act'],txt:`El buscador recorre los ${nf.format(D.length)} instrumentos de esta página, incluidos los ${nf.format(nNov)} incorporados después de la copia del archivo.
+    La lectura por afinidad («palabras que el archivo usa junto a las tuyas» e «instrumentos relacionados») se calculó sobre la copia de ${BASE.rotulo}:
+    lo incorporado después se encuentra por palabra, número y texto completo, pero todavía no por afinidad. La vigencia es una estimación a partir de las citas expresas entre normas; no reemplaza la verificación registral.`},
+  nov:{tipos:['ord','res','com'],txt:`Novedades lista lo sancionado este año y el anterior. La fecha de cada grupo es la de la sesión cuando el texto la consigna; si no, la de publicación en el sitio del Concejo.
+    El estado de promulgación depende del Boletín Oficial, que llega con meses de demora: «de hecho (presunta)» significa que no hay decreto publicado todavía, no que no exista. Los plazos son estimados a partir de la fecha de sesión.`},
+  idx:{tipos:['ord','res','com','dec','act'],txt:`El Índice muestra ordenanzas, decretos del Concejo, resoluciones, comunicaciones y actas, ordenados por las raíces temáticas de la Ley Orgánica.
+    Los ${nf.format(D.filter(r=>r.t==='pry').length)} proyectos no sancionados aparecen sólo en Buscar. Las piezas incorporadas automáticamente tienen la categoría que les asigna una regla por palabras clave: conviene revisarla al citar.`},
+  dig:{tipos:['ord','dec','res'],txt:`Esta pestaña reproduce un documento fijo, el Índice General del Digesto Municipal, que no se actualiza. Lo que sí cambia es el estado de cada norma que cita:
+    cuando una norma entra al Digesto (por el sitio del Concejo, por la Secretaría o desde Edición), su asiento pasa a tener texto. Los decretos del Ejecutivo que cita están en el Digesto de Decretos, no acá.`},
+  est:{tipos:['ord','res','com','dec','act'],txt:`Los gráficos y recuentos de esta pestaña se calcularon sobre la copia del archivo de ${BASE.rotulo} (${nf.format(BASE.piezas)} piezas) y <b>no incluyen las ${nf.format(nNov)} incorporadas después</b>.
+    Miden lo que el archivo conserva, no todo lo que se sancionó: un año con pocas piezas puede indicar menos actividad o un faltante del archivo.`},
+};
+function panel(k){
+  const s=SEC[k];
+  return `<details class="alc" data-alc="${k}"><summary><span class="k">Actualización y alcance</span>
+    <span class="r">Actualizado el <b>${fd(N.generado)}</b> · <b>${nf.format(D.length)}</b> instrumentos, de ${Math.min(...D.filter(r=>r.y).map(r=>r.y))} a ${Math.max(...D.filter(r=>r.y).map(r=>r.y))}
+    · <span class="w">${nVac} vacíos o huecos en ordenanzas, resoluciones y comunicaciones</span></span><span class="ab">Ver qué cubre</span></summary>
+    <div class="alc-in"><div><h4>En esta sección</h4><p class="alc-sec">${s.txt}</p></div>
+      <div><h4>Fuentes y fecha de cada una</h4>${fuentes()}</div>
+      <div><h4>Cobertura por año, ${Y0}–${ANIO}</h4>${grilla(s.tipos)}</div>
+      <div><h4>Vacíos y advertencias</h4>${vacios(s.tipos)}</div></div></details>`;
+}
+document.querySelectorAll('[data-alc-slot]').forEach(el=>{ const k=el.dataset.alcSlot; if(SEC[k]) el.outerHTML=panel(k); });
+})();
+</script>

@@ -283,6 +283,9 @@ def revisar_sibom(estado):
             if not md:
                 continue
             dnum, dy, dfe = int(md.group(1)), anio4(md.group(2), 0), md.group(3)
+            iso = '-'.join(reversed(dfe.split('/')))
+            if iso > estado.get('decretos_hasta', ''):
+                estado['decretos_hasta'] = iso
             cuerpo = t[md.end():]
             art = re.search(r'Art[ií]culo\s*1[°º]?\s*[:.\-–]?(.{0,900})', cuerpo, re.I)
             zona = art.group(1) if art else cuerpo[:1500]
@@ -447,9 +450,11 @@ def revisar_hcd_armar(corpus, ya, rel, cache):
     salida, vistos = [], {}
     for pid, r in posts.items():
         est = nrm(r.get('estado_hcd') or 'aprobado')
-        if not falta(r) or not re.search(r'aprob|sancion|sin dato', est):
-            continue
         pars = r.get('pars') or []
+        sancion = bool(re.search(r'Dada en|Sala de Sesiones|sanciona (la|el) siguiente', '\n'.join(pars), re.I))
+        if not falta(r) or not (re.search(r'aprob|sancion|sin dato', est) or sancion):
+            continue
+        aviso_estado = (not re.search(r'aprob|sancion|sin dato', est)) and sancion
         texto = '\n'.join(pars)
         y = r.get('y')
         if pars:
@@ -467,12 +472,27 @@ def revisar_hcd_armar(corpus, ya, rel, cache):
         o['autor'] = r.get('autor', '')
         o['ingresado'] = r.get('ingresado', '')
         o['publicado_hcd'] = r['fecha_post']
+        if aviso_estado:
+            o['aviso'] = f"El sitio del Concejo lo marca «{r.get('estado_hcd')}», pero el texto publicado consigna su sanción."
         k = (o['t'], o['n'], o['y'])
         if k in vistos and (vistos[k]['texto'] or not o['texto']):
             continue
         vistos[k] = o
     salida = list(vistos.values())
     return salida
+
+
+def ultimas_hcd(cache):
+    """Fecha de la última publicación del sitio del H.C.D. por tipo, y la última aprobada con número."""
+    out = {}
+    for r in (cache.get('posts') or {}).values():
+        t, f = r.get('t'), r.get('fecha_post')
+        if not t or not f or r.get('omitido'):
+            continue
+        o = out.setdefault(t, {'fecha': '', 'n': None, 'y': None})
+        if f > o['fecha']:
+            o.update(fecha=f, n=r.get('n'), y=r.get('y'))
+    return out
 
 
 def revisar_hcd_cache(corpus, ya, rel, cache):
@@ -581,7 +601,7 @@ def main():
         extra = ' '.join(x for x in (
             f"Autor: {o['autor']}." if o.get('autor') else '',
             f"Ingresado el {o['ingresado']}." if o.get('ingresado') else '',
-            f"Fuente: {o['fuente']}." if o.get('fuente') else '') if x)
+            f"Fuente: {o['fuente']}." if o.get('fuente') else '', o.get('aviso', '')) if x)
         if t != 'ord' or o.get('autor'):
             nt = (nt + ' ' + extra).strip()
         if not o['texto']:
@@ -613,8 +633,9 @@ def main():
     nuevas.sort(key=lambda e: (e['fs'] or '', {'ord': 3, 'res': 2, 'com': 1}[e['t']], e['n']), reverse=True)
     salida = {
         'v': 1, 'generado': dt.datetime.now().isoformat(timespec='minutes'),
-        'sibom': {'ultimo_boletin': estado.get('ultimo_boletin'), 'consulta': estado.get('ultima_consulta')},
-        'hcd': {'consulta': cache.get('ultima_consulta')},
+        'sibom': {'ultimo_boletin': estado.get('ultimo_boletin'), 'consulta': estado.get('ultima_consulta'),
+                  'decretos_hasta': estado.get('decretos_hasta')},
+        'hcd': {'consulta': cache.get('ultima_consulta'), 'ultima_publicacion': ultimas_hcd(cache)},
         'list': nuevas, 'efectos': list(efectos.values()),
     }
     js = ('/* Digesto Gilense — ordenanzas nuevas y su estado de promulgación.\n'
@@ -627,7 +648,10 @@ def main():
             previo = json.loads(t[t.index('{'):t.rindex('}') + 1])
         except Exception:  # noqa: BLE001
             previo = None
-    clave = lambda j: json.dumps({k: j.get(k) for k in ('list', 'efectos')} | {'b': (j.get('sibom') or {}).get('ultimo_boletin')}, ensure_ascii=False, sort_keys=True)
+    def clave(j):
+        sib = {k: v for k, v in (j.get('sibom') or {}).items() if k != 'consulta'}
+        hc = {k: v for k, v in (j.get('hcd') or {}).items() if k != 'consulta'}
+        return json.dumps({'l': j.get('list'), 'e': j.get('efectos'), 's': sib, 'h': hc}, ensure_ascii=False, sort_keys=True)
     if previo and clave(previo) == clave(salida):
         print('  sin cambios en las ordenanzas ni en sus estados: digesto-novedades.js queda como estaba')
     else:
