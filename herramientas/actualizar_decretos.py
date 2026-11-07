@@ -175,10 +175,13 @@ def main():
         bid = sys.argv[sys.argv.index('--probar') + 1]; modelo = entrenar(D['R'])
         xs = leer_boletin(bid); print(f'boletín {bid}: {leer_boletin.piezas} piezas, {len(xs)} decretos reconocidos')
         idx = {(r[0], r[1]): r for r in D['R']}; ok = n = 0
-        for x in xs:
-            sub = modelo.predecir(x['v']); r = idx.get((x['n'], x['y']))
-            if r: n += 1; ok += (D['subOf'][sub] == r[3])
-        print(f'  tema coincide con el relevamiento en {ok} de {n}; alcance general: {sum(1 for x in xs if normativo(x["a1"]))}')
+        for nombre, f in [('visto', lambda x: x['v']), ('visto 220', lambda x: x['v'][:220]), ('visto+art1', lambda x: x['v'] + ' ' + x['a1']), ('art1', lambda x: x['a1'])]:
+            ok = n = 0
+            for x in xs:
+                r = idx.get((x['n'], x['y']))
+                if r: n += 1; ok += (D['subOf'][modelo.predecir(f(x))] == r[3])
+            print(f'  {nombre}: tema coincide en {ok} de {n}')
+        print(f'  alcance general: {sum(1 for x in xs if normativo(x["a1"]))}')
         for x in xs[:3]: print('  ', x['n'], x['y'], x['f'], '|', x['v'][:70], '|', D['subs'][modelo.predecir(x['v'])])
         return
     if '--verificar' in sys.argv:
