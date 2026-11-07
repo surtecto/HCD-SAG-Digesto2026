@@ -161,6 +161,10 @@ def ficha(pars, t, n, y_titulo, a, archivo, rel):
         or re.search(r'(Sesi[oó]n\s+(?:Ordinaria|Extraordinaria|Especial|Preparatoria))[^\n]{0,120}?(\d{1,2}\s+de\s+[a-záéíóú]+\s+(?:de|del)\s+\d{4})', texto, re.I)
     fe = fecha_txt(ms.group(2)) if ms else None
     se = re.sub(r'^Sesi[oó]n', 'Sesión', ms.group(1).strip().title()) if ms else ''
+    for pre, nom in (('Sesión Or', 'Sesión Ordinaria'), ('Sesión Ex', 'Sesión Extraordinaria'),
+                     ('Sesión Es', 'Sesión Especial'), ('Sesión Pr', 'Sesión Preparatoria')):
+        if se.startswith(pre):
+            se = nom
     y = y_titulo or (fe.year if fe else None)
     vi = ''
     iv = next((i for i, p in enumerate(pars) if re.match(r'^\s*VISTO\b', p, re.I)), None)
@@ -324,7 +328,7 @@ def corpus_existente():
 HCD = 'https://hcdsanandresdegiles.com.ar'
 F_HCD = os.path.join(RAIZ, 'novedades', 'hcd-cache.json')
 CAT_HCD = {37: 'ord', 28: 'res', 23: 'com'}   # categorías de WordPress del sitio del Concejo
-RX_TIT = re.compile(r'^\s*(?:(\d{4})\s*[-–]?\s*)?(Ord|Resol|Res|Com)[a-z]*\.?\s*[-–.]?\s*0*(\d{1,4})(?:\s*[-–/]\s*(\d{2,4}))?\s*(?:[-–]\s*)?(?:\((.*?)\)?\s*)?', re.I)
+RX_TIT = re.compile(r'^\s*(?:(\d{4})\s*[-–]?\s*)?(Ord|Resol|Res|Com)[a-z]*\.?\s*[-–.]?\s*0*(\d{1,4})(?:\s*[-–/]\s*(\d{2,4}))?\s*(?:[-–]\s*)?(?:\(([^)]*)\)?\s*)?', re.I)
 
 
 def leer_pdf(datos):
@@ -395,23 +399,23 @@ def revisar_hcd(corpus, ya, rel, cache):
     # completar con PDF sólo lo que falta en el Digesto
     falta = lambda r: hcd_falta(r, corpus, ya)
     for pid, r in posts.items():
-        if not falta(r) or r.get('texto_ok') == r['mod']:
+        if not falta(r) or (r.get('texto_ok') == r['mod'] and r.get('estado_hcd')):
             continue
         try:
             cont = json.loads(traer(f"{HCD}/wp-json/wp/v2/posts/{pid}?_fields=content"))['content']['rendered']
         except Exception:  # noqa: BLE001
             continue
         txt = re.sub(r'\s+', ' ', texto_html(cont))
-        me = re.search(r'ESTADO:?\s*([A-Za-zÁÉÍÓÚáéíóúñ ]+?)\s*(?:DESCARGAR|$)', txt)
-        mi = re.search(r'INGRESADO EL:?\s*(\d{1,2}/\d{1,2}/\d{4})', txt)
-        ma = re.search(r'AUTOR:?\s*(.*?)\s*ESTADO', txt)
-        r['estado_hcd'] = (me.group(1).strip() if me else '')
+        me = re.search(r'ESTADO\s*:?\s*([A-Za-zÁÉÍÓÚáéíóúñ ]+?)\s*(?:DESCARGAR|$)', txt)
+        mi = re.search(r'INGRESADO\s+EL\s*:?\s*(\d{1,2}/\d{1,2}/\d{4})', txt)
+        ma = re.search(r'AUTOR\s*:?\s*(.*?)\s*ESTADO', txt)
+        r['estado_hcd'] = (me.group(1).strip() if me else '(sin dato)')
         r['ingresado'] = mi.group(1) if mi else ''
         r['autor'] = (ma.group(1).strip() if ma else '')
         pdfs = [u for u in re.findall(r'href="([^"]+\.pdf)"', cont, re.I)]
         r['pdf'] = pdfs[0] if pdfs else ''
         r['texto_ok'] = r['mod']
-        if r['pdf']:
+        if r['pdf'] and not r.get('pars'):
             try:
                 req = urllib.request.Request(r['pdf'], headers={'User-Agent': UA})
                 with urllib.request.urlopen(req, timeout=60) as resp:
@@ -442,7 +446,8 @@ def revisar_hcd_armar(corpus, ya, rel, cache):
     # armar fichas (el sitio repite algunas publicaciones: queda la que tiene texto)
     salida, vistos = [], {}
     for pid, r in posts.items():
-        if not falta(r) or 'aprob' not in nrm(r.get('estado_hcd', 'aprobado')):
+        est = nrm(r.get('estado_hcd') or 'aprobado')
+        if not falta(r) or not re.search(r'aprob|sancion|sin dato', est):
             continue
         pars = r.get('pars') or []
         texto = '\n'.join(pars)
@@ -452,9 +457,9 @@ def revisar_hcd_armar(corpus, ya, rel, cache):
             mt = re.search(r'(ORDENANZA|RESOLUCI[OÓ]N|COMUNICACI[OÓ]N)\s*N[°º.o]*\s*:?\s*([\d.]+)', texto, re.I)
             if mt and int(mt.group(2).replace('.', '') or 0) != r['n']:
                 pars = []
-        o = ficha(pars, r['t'], r['n'], y, r.get('a', ''), (r.get('pdf') or '').rsplit('/', 1)[-1], rel)
-        if not o['y']:
-            o['y'] = int(r['fecha_post'][:4]) if r['t'] != 'ord' else None
+        mt2 = RX_TIT.match(r.get('titulo', ''))
+        suma = (mt2.group(5) or '').strip(' )') if mt2 else ''
+        o = ficha(pars, r['t'], r['n'], y, suma or r.get('a', ''), (r.get('pdf') or '').rsplit('/', 1)[-1], rel)
         if not o['y'] or (r['t'], r['n'], o['y']) in corpus:
             continue
         o['texto'] = '\n'.join(pars)

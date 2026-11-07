@@ -1,6 +1,16 @@
 # Novedades del Digesto Gilense
 
-## Cargar ordenanzas nuevas
+## De dónde salen las novedades (sin intervención)
+
+- **Sitio del Concejo** (hcdsanandresdegiles.com.ar): todos los días se revisan las categorías
+  Ordenanzas, Resoluciones y Comunicaciones. Lo aprobado que no está en el Digesto se incorpora
+  con el texto del PDF publicado. Es la fuente principal de normas nuevas.
+- **SIBOM** (Boletín Oficial Municipal): no publica ordenanzas, sólo decretos y resoluciones del
+  Ejecutivo. Se usa para saber si una ordenanza fue promulgada o vetada.
+
+## Cargar ordenanzas a mano (sólo si hace falta)
+
+Sirve cuando la Secretaría entrega textos antes de que aparezcan en su sitio.
 
 1. En GitHub, entrar a la carpeta `novedades/ordenanzas/`.
 2. «Add file» → «Upload files» y arrastrar los Word (.docx) que entrega el H.C.D.

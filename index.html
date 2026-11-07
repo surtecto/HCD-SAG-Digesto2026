@@ -4164,7 +4164,9 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const fd=iso=>{ if(!iso) return ''; const [y,m,d]=iso.slice(0,10).split('-'); return `${+d}/${+m}/${y}`; };
 if(!N||!N.list||!N.list.length){ root.innerHTML='<p class="nov-vacio">Todavía no hay ordenanzas nuevas cargadas.</p>'; return; }
-const L=N.list.slice();
+const ANIO=new Date().getFullYear();
+const L=N.list.filter(e=>e.src!=='hcd'||e.y>=ANIO-1);
+const HIST=N.list.filter(e=>!L.includes(e));
 const G=()=>window.__DG;
 const CL={promulgada:'prom',tacita_decreto:'prom',tacita_presunta:'tac',sin_dato:'tac',en_plazo:'plazo',vetada_total:'veto',vetada_parcial:'veto',hcd:'hcd'};
 const TA={ord:'Ord.',res:'Res.',com:'Com.'};
@@ -4233,6 +4235,9 @@ function pintar(){
     <div><span class="nov-chip st-veto">Vetada</span><br>El Ejecutivo la observó total o parcialmente y vuelve al Concejo, que puede insistir con dos tercios.</div>
     <div><span class="nov-chip st-hcd">Aprobada por el H.C.D.</span><br>Resoluciones y comunicaciones: rigen desde su aprobación y no pasan por promulgación.</div>
   </div>
+  ${HIST.length?`<p class="nov-pie"><b>Además</b>, el sitio del Concejo permitió incorporar al Digesto ${HIST.length} instrumentos de años anteriores que faltaban en el archivo
+    (${['ord','res','com'].map(k=>[k,HIST.filter(e=>e.t===k).length]).filter(x=>x[1]).map(([k,n])=>n+' '+(n===1?{ord:'ordenanza',res:'resolución',com:'comunicación'}:{ord:'ordenanzas',res:'resoluciones',com:'comunicaciones'})[k]).join(', ')}).
+    No se listan acá porque no son novedades: se encuentran en Buscar y en el Índice, con su texto.</p>`:''}
   <p class="nov-pie">Fuentes: ordenanzas, resoluciones y comunicaciones publicadas en el sitio del Honorable Concejo Deliberante
     (hcdsanandresdegiles.com.ar), textos entregados por su Secretaría y decretos del Departamento Ejecutivo publicados en el
     SIBOM (municipio 111). Ambos sitios se consultan todos los días de manera automática. El Boletín de San Andrés de Giles se publica con varios
