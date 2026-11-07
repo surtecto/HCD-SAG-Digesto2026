@@ -3,7 +3,7 @@
 
 Lee los boletines nuevos (los que todavía no están en decretos.html), extrae cada decreto
 (número, fecha, visto, artículo 1º), lo clasifica por tema y subtema con un modelo entrenado
-sobre el registro existente (acierto medido: 89 % por subtema, 92 % por tema), detecta los de
+sobre el registro existente (acierto medido sobre el boletín 120º: el tema coincide con el relevamiento en 40 de 52 decretos, 77 %), detecta los de
 alcance general y vuelve a calcular el análisis. Escribe el resultado dentro de decretos.html.
 
     python herramientas/actualizar_decretos.py              # consulta el SIBOM
@@ -208,7 +208,7 @@ def main():
                 continue
             decs = [x for x in todos if (x['n'], x['y']) not in conocidos]
             for x in decs:
-                sub = modelo.predecir(x['v']); tema = D['subOf'][sub]
+                sub = modelo.predecir(x['v'] + ' ' + x['a1']); tema = D['subOf'][sub]
                 au = autoridad(x['f'])
                 D['R'].append([x['n'], x['y'], x['f'], tema, sub, 0, x['v'][:220] + ('…' if len(x['v']) > 220 else ''), num, x['c'], au])
                 conocidos.add((x['n'], x['y']))
