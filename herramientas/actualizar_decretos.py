@@ -176,10 +176,10 @@ def main():
         xs = leer_boletin(bid); print(f'boletín {bid}: {leer_boletin.piezas} piezas, {len(xs)} decretos reconocidos')
         idx = {(r[0], r[1]): r for r in D['R']}; ok = n = 0
         for x in xs:
-            sub = modelo.predecir(x['v'] + ' ' + x['a1']); r = idx.get((x['n'], x['y']))
+            sub = modelo.predecir(x['v']); r = idx.get((x['n'], x['y']))
             if r: n += 1; ok += (D['subOf'][sub] == r[3])
         print(f'  tema coincide con el relevamiento en {ok} de {n}; alcance general: {sum(1 for x in xs if normativo(x["a1"]))}')
-        for x in xs[:3]: print('  ', x['n'], x['y'], x['f'], '|', x['v'][:70], '|', D['subs'][modelo.predecir(x['v'] + ' ' + x['a1'])])
+        for x in xs[:3]: print('  ', x['n'], x['y'], x['f'], '|', x['v'][:70], '|', D['subs'][modelo.predecir(x['v'])])
         return
     if '--verificar' in sys.argv:
         import copy
@@ -205,7 +205,7 @@ def main():
                 continue
             decs = [x for x in todos if (x['n'], x['y']) not in conocidos]
             for x in decs:
-                sub = modelo.predecir(x['v'] + ' ' + x['a1']); tema = D['subOf'][sub]
+                sub = modelo.predecir(x['v']); tema = D['subOf'][sub]
                 au = autoridad(x['f'])
                 D['R'].append([x['n'], x['y'], x['f'], tema, sub, 0, x['v'][:220] + ('…' if len(x['v']) > 220 else ''), num, x['c'], au])
                 conocidos.add((x['n'], x['y']))
