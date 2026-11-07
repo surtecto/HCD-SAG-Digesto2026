@@ -80,6 +80,15 @@ REGLAS = [
     (r'inter[eé]s municipal|declara', 'X', 'Declaraciones de interés y reconocimientos'),
 ]
 
+REGLAS_HCD = [
+    (r'reconoc|homenaje|distinci|destacad', 'X', 'Declaraciones de interés y reconocimientos'),
+    (r'inter[eé]s (legislativo|municipal|cultural)', 'X', 'Declaraciones de interés y reconocimientos'),
+    (r'repudi|rechazo|preocupaci|benepl[aá]cito|adhesi[oó]n a la jornada|solidaridad', 'X', 'Beneplácitos, repudios y pronunciamientos'),
+    (r'solicit|requer|inform|pedido', 'X', 'Pedidos de informes y requerimientos al D.E.'),
+    (r'rendici[oó]n de cuentas', 'II', 'Rendición de cuentas y control'),
+    (r'reglamento interno|licencia|incorpora.*concejal', 'I', 'Reglamento y funcionamiento del H.C.D.'),
+]
+
 UA = 'DigestoGilense/1.0 (actualizador del Digesto de San Andres de Giles)'
 
 
@@ -142,22 +151,17 @@ def autoridad(d):
     return ''
 
 
-def leer_ordenanza(ruta, rel):
-    nombre = os.path.basename(ruta)
-    pars = leer_docx(ruta)
+TIPO_NOM = {'ord': 'Ordenanza', 'res': 'Resolución', 'com': 'Comunicación'}
+
+
+def ficha(pars, t, n, y_titulo, a, archivo, rel):
+    """Arma los datos de un instrumento a partir de sus párrafos de texto."""
     texto = '\n'.join(pars)
-    m = re.search(r'ORDENANZA\s*N[°º.o]*\s*([\d.]+)', texto, re.I)
-    mf = re.search(r'Ord0*(\d+)', nombre)
-    n = int((m.group(1) if m else mf.group(1)).replace('.', ''))
-    ms = re.search(r'Dada en (Sesi[oó]n\s+\w+)[^\n]*?el d[ií]a\s+([^\n]+)', texto, re.I)
+    ms = re.search(r'Dada en (Sesi[oó]n\s+\w+)[^\n]*?el d[ií]a\s+([^\n]+)', texto, re.I) \
+        or re.search(r'(Sesi[oó]n\s+(?:Ordinaria|Extraordinaria|Especial|Preparatoria))[^\n]{0,120}?(\d{1,2}\s+de\s+[a-záéíóú]+\s+(?:de|del)\s+\d{4})', texto, re.I)
     fe = fecha_txt(ms.group(2)) if ms else None
-    se = ms.group(1).strip().title().replace('Sesión', 'Sesión') if ms else ''
-    se = re.sub(r'^Sesi[oó]n', 'Sesión', se)
-    my = re.match(r'(\d{4})-', nombre)
-    y = fe.year if fe else (int(my.group(1)) if my else HOY.year)
-    msum = re.search(r'\((.+)\)\s*\.docx$', nombre, re.I)
-    a = (msum.group(1).strip() if msum else '')
-    # visto: párrafo(s) entre "Visto" y "Considerando"
+    se = re.sub(r'^Sesi[oó]n', 'Sesión', ms.group(1).strip().title()) if ms else ''
+    y = y_titulo or (fe.year if fe else None)
     vi = ''
     iv = next((i for i, p in enumerate(pars) if re.match(r'^\s*VISTO\b', p, re.I)), None)
     if iv is not None:
@@ -170,24 +174,40 @@ def leer_ordenanza(ruta, rel):
                 break
             bloque.append(p)
         vi = ' '.join(bloque)[:600]
-    # artículo 1º dispositivo como sumilla de respaldo
     if not a:
         art = re.search(r'Art[ií]culo\s*1[°º]?\s*[:.\-–]\s*([^\n]+)', texto, re.I)
-        a = art.group(1)[:240] if art else 'Ordenanza ' + str(n)
-    rz, c = rel.get('clasificacion', {}).get(str(n), (None, None))
+        a = art.group(1)[:240] if art else f'{TIPO_NOM[t]} {n}'
+    rz, c = (rel.get('clasificacion', {}).get(str(n), (None, None)) if t == 'ord' else (None, None))
     if not rz:
         base = nrm(a + ' ' + vi)
         rz, c = '0', 'Requiere lectura del documento'
-        for pat, r1, c1 in REGLAS:
+        reglas = REGLAS if t == 'ord' else REGLAS_HCD + REGLAS
+        for pat, r1, c1 in reglas:
             if re.search(pat, base):
                 rz, c = r1, c1
                 break
     return {
-        'n': n, 'y': y, 'a': a, 'fe_iso': fe.isoformat() if fe else None,
+        't': t, 'n': n, 'y': y, 'a': a, 'fe_iso': fe.isoformat() if fe else None,
         'fe': fe and f'{fe.day} de {list(MESES)[fe.month - 1]} de {fe.year}',
-        'se': se or 'Sesión', 'vi': vi, 'texto': texto, 'archivo': nombre,
+        'se': se or 'Sesión', 'vi': vi, 'texto': texto, 'archivo': archivo,
         'rz': rz, 'c': c, 'au': autoridad(fe),
     }
+
+
+def leer_ordenanza(ruta, rel):
+    nombre = os.path.basename(ruta)
+    pars = leer_docx(ruta)
+    texto = '\n'.join(pars)
+    m = re.search(r'ORDENANZA\s*N[°º.o]*\s*([\d.]+)', texto, re.I)
+    mf = re.search(r'Ord0*(\d+)', nombre)
+    n = int((m.group(1) if m else mf.group(1)).replace('.', ''))
+    my = re.match(r'(\d{4})-', nombre)
+    msum = re.search(r'\((.+)\)\s*\.docx$', nombre, re.I)
+    o = ficha(pars, 'ord', n, None, msum.group(1).strip() if msum else '', nombre, rel)
+    if not o['y']:
+        o['y'] = int(my.group(1)) if my else HOY.year
+    o['fuente'] = 'Texto entregado por la Secretaría del H.C.D.'
+    return o
 
 
 def efectos_auto(texto):
@@ -300,6 +320,161 @@ def corpus_existente():
         return {}
 
 
+# ---------------------------------------------------------------- sitio del H.C.D.
+HCD = 'https://hcdsanandresdegiles.com.ar'
+F_HCD = os.path.join(RAIZ, 'novedades', 'hcd-cache.json')
+CAT_HCD = {37: 'ord', 28: 'res', 23: 'com'}   # categorías de WordPress del sitio del Concejo
+RX_TIT = re.compile(r'^\s*(?:(\d{4})\s*[-–]?\s*)?(Ord|Resol|Res|Com)[a-z]*\.?\s*[-–.]?\s*0*(\d{1,4})(?:\s*[-–/]\s*(\d{2,4}))?\s*(?:[-–]\s*)?(?:\((.*?)\)?\s*)?', re.I)
+
+
+def leer_pdf(datos):
+    try:
+        import io
+        from pypdf import PdfReader
+    except ImportError:
+        return None
+    try:
+        r = PdfReader(io.BytesIO(datos))
+        t = '\n'.join((pg.extract_text() or '') for pg in r.pages)
+    except Exception:  # noqa: BLE001
+        return None
+    lineas = [re.sub(r'[ \t\u00a0]+', ' ', x).strip() for x in t.splitlines()]
+    # une renglones cortados dentro de un mismo párrafo
+    pars, cur = [], ''
+    for x in lineas:
+        if not x:
+            if cur:
+                pars.append(cur); cur = ''
+            continue
+        nuevo = re.match(r'^(Art[ií]culo|ART[IÍ]CULO|VISTO|Visto|CONSIDERANDO|Considerando|Que\b|Por ello|ORDENANZA|RESOLUCI|COMUNICACI|Dada en|[A-Z]\)|\d+\))', x)
+        if cur and (nuevo or cur.endswith(('.', ':', ';'))):
+            pars.append(cur); cur = x
+        else:
+            cur = (cur + ' ' + x).strip()
+    if cur:
+        pars.append(cur)
+    return pars
+
+
+def revisar_hcd(corpus, ya, rel, cache):
+    """Busca en el sitio del Concejo ordenanzas, resoluciones y comunicaciones que no estén en el Digesto."""
+    posts = cache.setdefault('posts', {})
+    desde = cache.get('ultima_revision')
+    nuevos = 0
+    for cat, t in CAT_HCD.items():
+        for pag in range(1, 80):
+            url = f'{HCD}/wp-json/wp/v2/posts?categories={cat}&per_page=100&page={pag}&_fields=id,date,modified,title,link'
+            if desde:
+                url += '&modified_after=' + desde
+            try:
+                lote = json.loads(traer(url))
+            except Exception as e:  # noqa: BLE001
+                if pag > 1 and '400' in str(e):
+                    break
+                raise
+            if not lote:
+                break
+            for p in lote:
+                pid = str(p['id'])
+                if pid in posts and posts[pid].get('mod') == p['modified']:
+                    continue
+                tit = html.unescape(p['title']['rendered'])
+                m = RX_TIT.match(tit)
+                reg = {'mod': p['modified'], 'fecha_post': p['date'][:10], 'titulo': tit, 'link': p['link'], 't': t}
+                if not m:
+                    reg['omitido'] = 'título sin número'
+                    posts[pid] = reg
+                    continue
+                y = m.group(1) or m.group(4)
+                reg.update(n=int(m.group(3)), y=anio4(y, 0) if y else None, a=(m.group(5) or '').strip(' )'))
+                posts[pid] = reg
+                nuevos += 1
+            if len(lote) < 100:
+                break
+    print(f'  sitio del H.C.D.: {nuevos} publicaciones nuevas o modificadas')
+    # completar con PDF sólo lo que falta en el Digesto
+    falta = lambda r: hcd_falta(r, corpus, ya)
+    for pid, r in posts.items():
+        if not falta(r) or r.get('texto_ok') == r['mod']:
+            continue
+        try:
+            cont = json.loads(traer(f"{HCD}/wp-json/wp/v2/posts/{pid}?_fields=content"))['content']['rendered']
+        except Exception:  # noqa: BLE001
+            continue
+        txt = re.sub(r'\s+', ' ', texto_html(cont))
+        me = re.search(r'ESTADO:?\s*([A-Za-zÁÉÍÓÚáéíóúñ ]+?)\s*(?:DESCARGAR|$)', txt)
+        mi = re.search(r'INGRESADO EL:?\s*(\d{1,2}/\d{1,2}/\d{4})', txt)
+        ma = re.search(r'AUTOR:?\s*(.*?)\s*ESTADO', txt)
+        r['estado_hcd'] = (me.group(1).strip() if me else '')
+        r['ingresado'] = mi.group(1) if mi else ''
+        r['autor'] = (ma.group(1).strip() if ma else '')
+        pdfs = [u for u in re.findall(r'href="([^"]+\.pdf)"', cont, re.I)]
+        r['pdf'] = pdfs[0] if pdfs else ''
+        r['texto_ok'] = r['mod']
+        if r['pdf']:
+            try:
+                req = urllib.request.Request(r['pdf'], headers={'User-Agent': UA})
+                with urllib.request.urlopen(req, timeout=60) as resp:
+                    pars = leer_pdf(resp.read())
+                if pars:
+                    r['pars'] = pars
+            except Exception as e:  # noqa: BLE001
+                r['pdf_error'] = str(e)[:120]
+        time.sleep(0.3)
+    cache['ultima_revision'] = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S')
+    return revisar_hcd_armar(corpus, ya, rel, cache)
+
+
+def hcd_falta(r, corpus, ya):
+    t, n, y = r['t'], r.get('n'), r.get('y')
+    if not n or r.get('omitido'):
+        return False
+    if t == 'ord' and n >= 100 and (any(k[0] == 'ord' and k[1] == n and (k[2] or 0) >= 1993 for k in corpus) or ('ord', n) in ya):
+        return False   # serie continua de ordenanzas: el número no se repite
+    if y and ((t, n, y) in corpus or (t, n, y) in ya):
+        return False
+    return True
+
+
+def revisar_hcd_armar(corpus, ya, rel, cache):
+    posts = cache.get('posts', {})
+    falta = lambda r: hcd_falta(r, corpus, ya)
+    # armar fichas (el sitio repite algunas publicaciones: queda la que tiene texto)
+    salida, vistos = [], {}
+    for pid, r in posts.items():
+        if not falta(r) or 'aprob' not in nrm(r.get('estado_hcd', 'aprobado')):
+            continue
+        pars = r.get('pars') or []
+        texto = '\n'.join(pars)
+        y = r.get('y')
+        if pars:
+            # el número del texto debe coincidir con el del título (el sitio a veces adjunta otro archivo)
+            mt = re.search(r'(ORDENANZA|RESOLUCI[OÓ]N|COMUNICACI[OÓ]N)\s*N[°º.o]*\s*:?\s*([\d.]+)', texto, re.I)
+            if mt and int(mt.group(2).replace('.', '') or 0) != r['n']:
+                pars = []
+        o = ficha(pars, r['t'], r['n'], y, r.get('a', ''), (r.get('pdf') or '').rsplit('/', 1)[-1], rel)
+        if not o['y']:
+            o['y'] = int(r['fecha_post'][:4]) if r['t'] != 'ord' else None
+        if not o['y'] or (r['t'], r['n'], o['y']) in corpus:
+            continue
+        o['texto'] = '\n'.join(pars)
+        o['fuente'] = 'Sitio del H.C.D. (' + r['link'] + ')'
+        o['autor'] = r.get('autor', '')
+        o['ingresado'] = r.get('ingresado', '')
+        o['publicado_hcd'] = r['fecha_post']
+        k = (o['t'], o['n'], o['y'])
+        if k in vistos and (vistos[k]['texto'] or not o['texto']):
+            continue
+        vistos[k] = o
+    salida = list(vistos.values())
+    return salida
+
+
+def revisar_hcd_cache(corpus, ya, rel, cache):
+    """Rearma las fichas del sitio del H.C.D. con lo ya guardado, sin conectarse."""
+    return revisar_hcd_armar(corpus, ya, rel, cache) if cache.get('posts') else []
+
+
 # ---------------------------------------------------------------- estado de cada ordenanza
 def estado_de(o, prom):
     p = prom.get(f"{o['n']}-{o['y']}")
@@ -343,6 +518,7 @@ def nota(pr):
 
 def main():
     sin_sibom = '--sin-sibom' in sys.argv
+    sin_hcd = '--sin-hcd' in sys.argv
     with open(F_REL, encoding='utf-8') as f:
         rel = json.load(f)
     estado = {}
@@ -364,38 +540,76 @@ def main():
         prom[k] = v
 
     corpus = corpus_existente()
-    nuevas, efectos = [], {}
+    instr = []
     archivos = sorted(f for f in os.listdir(DIR_ORD) if f.lower().endswith('.docx') and not f.startswith('~$'))
     for fn in archivos:
-        o = leer_ordenanza(os.path.join(DIR_ORD, fn), rel)
-        pr = estado_de(o, prom)
-        efs = rel.get('efectos', {}).get(str(o['n'])) or efectos_auto(o['texto'])
-        rf = [[T3[t], n, acc, 1 if (t, n, y) in corpus else 0] for t, n, y, acc in efs]
+        instr.append(leer_ordenanza(os.path.join(DIR_ORD, fn), rel))
+    ya = {(o['t'], o['n'], o['y']) for o in instr} | {(o['t'], o['n']) for o in instr}
+    cache = {}
+    if os.path.exists(F_HCD):
+        with open(F_HCD, encoding='utf-8') as f:
+            cache = json.load(f)
+    if not sin_hcd:
+        try:
+            instr += revisar_hcd(corpus, ya, rel, cache)
+            cache['ultima_consulta'] = {'fecha': dt.datetime.now().isoformat(timespec='minutes'), 'ok': True}
+        except Exception as e:  # noqa: BLE001
+            cache['ultima_consulta'] = {'fecha': dt.datetime.now().isoformat(timespec='minutes'), 'ok': False, 'error': str(e)[:200]}
+            print('  aviso: no se pudo consultar el sitio del H.C.D.:', e)
+            instr += [o for o in revisar_hcd_cache(corpus, ya, rel, cache)]
+    else:
+        instr += revisar_hcd_cache(corpus, ya, rel, cache)
+
+    nuevas, efectos = [], {}
+    for o in instr:
+        t = o['t']
+        if t == 'ord':
+            pr = estado_de(o, prom)
+            efs = rel.get('efectos', {}).get(str(o['n'])) or efectos_auto(o['texto'])
+            v = VIG[pr['estado']]
+        else:
+            pr = {'estado': 'hcd', 'etiqueta': 'Aprobada por el H.C.D.'}
+            efs = []
+            v = 'Cumplida / declarativa' if t == 'com' else 'Vigente (sujeta a verificación)'
+        rf = [[T3[tt], n, acc, 1 if (tt, n, y) in corpus else 0] for tt, n, y, acc in efs]
+        nt = nota(pr)
+        extra = ' '.join(x for x in (
+            f"Autor: {o['autor']}." if o.get('autor') else '',
+            f"Ingresado el {o['ingresado']}." if o.get('ingresado') else '',
+            f"Fuente: {o['fuente']}." if o.get('fuente') else '') if x)
+        if t != 'ord' or o.get('autor'):
+            nt = (nt + ' ' + extra).strip()
+        if not o['texto']:
+            nt += ' El texto completo no pudo leerse del archivo publicado.'
         e = {
-            'id': f"ord-{o['n']}-{o['y']}", 't': 'ord', 'n': o['n'], 'y': o['y'], 'a': o['a'],
+            'id': f"{t}-{o['n']}-{o['y']}", 't': t, 'n': o['n'], 'y': o['y'], 'a': o['a'],
             'texto': o['texto'], 'archivo': o['archivo'], 'rz': o['rz'], 'c': o['c'],
-            'v': VIG[pr['estado']], 'fe': o['fe'] or '', 'se': o['se'], 'vi': o['vi'], 'au': o['au'],
-            'nt': nota(pr), 'rf': rf, 'pr': pr, 'fs': o['fe_iso'], 'ts': 1,
+            'v': v, 'fe': o['fe'] or '', 'se': o['se'], 'vi': o['vi'], 'au': o['au'],
+            'nt': nt, 'rf': rf, 'pr': pr, 'fs': o['fe_iso'] or o.get('publicado_hcd'), 'ts': 1,
+            'src': 'hcd' if o.get('publicado_hcd') else 'docx',
         }
+        if not o['fe_iso'] and o.get('publicado_hcd'):
+            e['fs_aprox'] = True
         nuevas.append(e)
         if pr['estado'] == 'vetada_total':
             continue  # una ordenanza vetada no produce efectos sobre otras
-        for t, n, y, acc in efs:
-            r = corpus.get((t, n, y))
+        for tt, n, y, acc in efs:
+            r = corpus.get((tt, n, y))
             if not r:
                 continue
-            k = f'{t}-{n}-{y}'
-            x = efectos.setdefault(k, {'id': k, 't': t, 'n': n, 'y': y, 'ts': 1, 'ri': [], 'efecto': True})
-            x['ri'].append(['Ord', o['n'], acc])
+            k = f'{tt}-{n}-{y}'
+            x = efectos.setdefault(k, {'id': k, 't': tt, 'n': n, 'y': y, 'ts': 1, 'ri': [], 'efecto': True})
+            x['ri'].append([T3[t], o['n'], acc])
             if acc == 'Deroga':
                 x['v'] = 'Derogada'
             elif acc in ('Modifica', 'Deroga parcialmente') and x.get('v') != 'Derogada' and not r['v'].startswith('Derog'):
                 x['v'] = 'Vigente con modificaciones'
 
-    nuevas.sort(key=lambda e: (e['fs'] or '', e['n']), reverse=True)
+    nuevas.sort(key=lambda e: (e['fs'] or '', {'ord': 3, 'res': 2, 'com': 1}[e['t']], e['n']), reverse=True)
     salida = {
         'v': 1, 'generado': dt.datetime.now().isoformat(timespec='minutes'),
         'sibom': {'ultimo_boletin': estado.get('ultimo_boletin'), 'consulta': estado.get('ultima_consulta')},
+        'hcd': {'consulta': cache.get('ultima_consulta')},
         'list': nuevas, 'efectos': list(efectos.values()),
     }
     js = ('/* Digesto Gilense — ordenanzas nuevas y su estado de promulgación.\n'
@@ -416,9 +630,15 @@ def main():
             f.write(js)
     with open(F_EST, 'w', encoding='utf-8') as f:
         json.dump(estado, f, ensure_ascii=False, indent=1)
-    print(f'{len(nuevas)} ordenanzas nuevas, {len(efectos)} normas anteriores afectadas → {os.path.basename(F_OUT)}')
-    for e in nuevas:
-        print(f"  Ord. {e['n']}/{e['y']} · {e['fe']} · {e['pr']['etiqueta']} · {e['c']}")
+    if cache:
+        with open(F_HCD, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, ensure_ascii=False, indent=0)
+    from collections import Counter
+    c = Counter(e['t'] for e in nuevas)
+    print(f"{c['ord']} ordenanzas, {c['res']} resoluciones y {c['com']} comunicaciones nuevas; "
+          f'{len(efectos)} normas anteriores afectadas → {os.path.basename(F_OUT)}')
+    for e in nuevas[:40]:
+        print(f"  {T3[e['t']]}. {e['n']}/{e['y']} · {e['fe'] or e['fs']} · {e['pr']['etiqueta']} · {e['c']}")
 
 
 if __name__ == '__main__':

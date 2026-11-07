@@ -4085,7 +4085,7 @@ abierto()?vistaEditor():vistaClave();
 .nov-sib{font:500 12px/1.45 var(--mono);color:var(--ink-3);text-align:right;max-width:30ch}
 .nov-sib b{color:var(--ink-2);font-weight:600}
 .nov-sib .x{color:var(--miss)}
-.nov-k{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--rule);background:var(--surface);margin:0 0 30px}
+.nov-k{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--rule);background:var(--surface);margin:0 0 30px}
 .nov-k button{all:unset;cursor:pointer;padding:14px 16px 13px;border-right:1px solid var(--rule-2);display:block;position:relative}
 .nov-k button:last-child{border-right:0}
 .nov-k button:hover{background:var(--surface-2)}
@@ -4128,8 +4128,13 @@ abierto()?vistaEditor():vistaClave();
 .nov-e a{color:inherit}
 .st-prom{--c:var(--ok);--cs:var(--ok-soft)} .st-tac{--c:var(--accent);--cs:var(--accent-soft)}
 .st-plazo{--c:var(--mod);--cs:var(--mod-soft)} .st-veto{--c:var(--der);--cs:var(--der-soft)}
+.st-hcd{--c:var(--res);--cs:var(--res-soft)}
+.nov-n.res{color:var(--res)} .nov-n.com{color:var(--com)}
+.nov-mas{margin:18px 0 0 176px;height:40px;padding:0 16px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink);font:600 13.5px var(--sans);cursor:pointer}
+.nov-mas:hover{border-color:var(--ink)}
+@media(max-width:860px){.nov-mas{margin-left:0}}
 .nov-vacio{padding:18px 0;color:var(--ink-3);font-style:italic}
-.nov-ley{margin:34px 0 0;padding:18px 20px;border:1px solid var(--rule);background:var(--surface);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.nov-ley{margin:34px 0 0;padding:18px 20px;border:1px solid var(--rule);background:var(--surface);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
 .nov-ley div{font-size:13px;line-height:1.5;color:var(--ink-2)}
 .nov-ley div .nov-chip{margin-bottom:8px}
 .nov-pie{font-size:12.5px;color:var(--ink-3);margin-top:18px;max-width:90ch;line-height:1.55}
@@ -4147,7 +4152,7 @@ abierto()?vistaEditor():vistaClave();
   .nov-ses{grid-template-columns:1fr}.nov-fe{position:static;display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
   .nov-fe .d{font-size:30px}
   .nov-i{grid-template-columns:62px minmax(0,1fr)}.nov-e{grid-column:2;justify-self:start;text-align:left}
-  .nov-ley{grid-template-columns:1fr 1fr}
+  .nov-ley{grid-template-columns:1fr 1fr}.nov-k{grid-template-columns:repeat(2,minmax(0,1fr))}
   .nov-home{grid-template-columns:1fr}
 }
 </style>
@@ -4161,8 +4166,10 @@ const fd=iso=>{ if(!iso) return ''; const [y,m,d]=iso.slice(0,10).split('-'); re
 if(!N||!N.list||!N.list.length){ root.innerHTML='<p class="nov-vacio">Todavía no hay ordenanzas nuevas cargadas.</p>'; return; }
 const L=N.list.slice();
 const G=()=>window.__DG;
-const CL={promulgada:'prom',tacita_decreto:'prom',tacita_presunta:'tac',sin_dato:'tac',en_plazo:'plazo',vetada_total:'veto',vetada_parcial:'veto'};
-const GR={prom:'Promulgadas por decreto',tac:'Promulgadas de hecho',plazo:'En plazo',veto:'Vetadas'};
+const CL={promulgada:'prom',tacita_decreto:'prom',tacita_presunta:'tac',sin_dato:'tac',en_plazo:'plazo',vetada_total:'veto',vetada_parcial:'veto',hcd:'hcd'};
+const TA={ord:'Ord.',res:'Res.',com:'Com.'};
+const GR={prom:'Promulgadas por decreto',tac:'Promulgadas de hecho',plazo:'En plazo',veto:'Vetadas',hcd:'Resoluciones y comunicaciones'};
+let MAS=false;
 const hoy=new Date(); hoy.setHours(0,0,0,0);
 const dias=iso=>Math.round((hoy-new Date(iso+'T00:00:00'))/864e5);
 const ultimoMes=L.filter(e=>e.fs&&dias(e.fs)<=31);
@@ -4182,50 +4189,60 @@ function efectos(e){ if(!e.rf||!e.rf.length) return '';
   return '<div class="nov-ef">'+e.rf.map(([t,n,a,ok])=>{ const k=t.toLowerCase(); const cl=/^Deroga$/.test(a)?'':/Refiere/.test(a)?'r':'m';
     return `<button type="button" class="${cl}" ${ok?`data-go="${k}|${n}"`:'disabled title="No figura en el archivo del Digesto"'}><b>${esc(a)}</b> ${t}. ${n}</button>`; }).join('')+'</div>'; }
 function item(e){ return `<li class="nov-i">
-    <div class="nov-n">${e.n}<small>/${String(e.y).slice(2)}</small></div>
-    <div><p class="nov-t"><button type="button" data-ab="${e.n}|${e.y}">${esc(e.a)}</button></p>
+    <div class="nov-n ${e.t}">${e.t==='ord'?'':'<small>'+TA[e.t]+'</small>'}${e.n}<small>/${String(e.y).slice(2)}</small></div>
+    <div><p class="nov-t"><button type="button" data-ab="${e.t}|${e.n}|${e.y}">${esc(e.a)}</button></p>
       <div class="nov-c">${esc(e.c)}</div>${efectos(e)}</div>
     <div class="nov-e">${chip(e)}</div></li>`; }
 function sesiones(lista){
-  const by=new Map(); lista.forEach(e=>{ const k=(e.fs||'s/f')+'|'+(e.se||''); if(!by.has(k)) by.set(k,[]); by.get(k).push(e); });
+  const by=new Map(); lista.forEach(e=>{ const k=(e.fs||'s/f')+'|'+(e.fs_aprox?'Publicadas en el sitio del H.C.D.; sin fecha de sesión en el texto':(e.se||'')); if(!by.has(k)) by.set(k,[]); by.get(k).push(e); });
   return [...by.entries()].map(([k,l])=>{ const [f,se]=k.split('|'); const d=f!=='s/f'?f.split('-'):null;
     return `<section class="nov-ses"><div class="nov-fe">${d?`<div class="d">${+d[2]}</div><div class="m">${MES[+d[1]-1]} ${d[0]}</div>`:'<div class="d">s/f</div>'}<div class="s">${esc(se)}</div></div>
-      <ul class="nov-l">${l.sort((a,b)=>a.n-b.n).map(item).join('')}</ul></section>`; }).join('');
+      <ul class="nov-l">${l.sort((a,b)=>({ord:0,res:1,com:2}[a.t]-{ord:0,res:1,com:2}[b.t])||a.n-b.n).map(item).join('')}</ul></section>`; }).join('');
 }
 function cuenta(c){ return L.filter(e=>(CL[e.pr&&e.pr.estado]||'tac')===c).length; }
+function sesionesN(lista){ const ks=[]; lista.forEach(e=>{ const k=(e.fs||'')+'|'+(e.se||''); if(!ks.includes(k)) ks.push(k); }); return ks; }
 function pintar(){
   const s=N.sibom||{}, q=s.consulta||{};
   const fil=e=>!F||(CL[e.pr&&e.pr.estado]||'tac')===F;
-  const um=ultimoMes.filter(fil), resto=L.filter(e=>!ultimoMes.includes(e)).filter(fil);
+  const um=ultimoMes.filter(fil), resto0=L.filter(e=>!ultimoMes.includes(e)).filter(fil);
+  const ks=sesionesN(resto0), corte=ks.slice(0,4);
+  const resto=MAS?resto0:resto0.filter(e=>corte.includes((e.fs||'')+'|'+(e.se||'')));
+  const ocultas=resto0.length-resto.length;
+  const h=N.hcd&&N.hcd.consulta;
   root.innerHTML=`
   <header class="nov-h"><div><div class="k">Novedades legislativas</div>
       <h2>Lo que el Concejo sancionó y qué pasó después</h2>
-      <p>Cada ordenanza nueva se incorpora al Digesto con su texto completo. Al lado se indica en qué estado está:
+      <p>Cada norma nueva que publica el Concejo se incorpora al Digesto con su texto completo. Al lado se indica en qué estado está:
         si el Departamento Ejecutivo la promulgó por decreto, si la vetó, o si corre todavía el plazo de diez días hábiles
         que fija la Ley Orgánica de las Municipalidades. Vencido ese plazo sin veto, la ordenanza queda promulgada de hecho.</p></div>
-    <div class="nov-sib">Boletín Oficial Municipal<br><b>${esc(s.ultimo_boletin||'—')}</b><br>
-      ${q.fecha?`Consultado el ${fd(q.fecha)}${q.ok===false?' · <span class="x">sin respuesta</span>':''}`:''}<br>Actualizado el ${fd(N.generado)}</div></header>
+    <div class="nov-sib">Sitio del H.C.D.<br>${h&&h.fecha?`<b>consultado el ${fd(h.fecha)}</b>${h.ok===false?' · <span class="x">sin respuesta</span>':''}`:'<b>—</b>'}<br>
+      Boletín Oficial Municipal<br><b>${esc(s.ultimo_boletin||'—')}</b><br>
+      ${q.fecha?`Consultado el ${fd(q.fecha)}${q.ok===false?' · <span class="x">sin respuesta</span>':''}`:''}</div></header>
   <div class="nov-k" role="group" aria-label="Filtrar por estado">
-    <button type="button" aria-pressed="${!F}" data-f="">${'<b>'+L.length+'</b>'}<span>Ordenanzas nuevas</span></button>
-    ${['prom','tac','plazo','veto'].map(c=>`<button type="button" class="st-${c}" aria-pressed="${F===c}" data-f="${c}"><b>${cuenta(c)}</b><span>${GR[c]}</span></button>`).join('')}
+    <button type="button" aria-pressed="${!F}" data-f="">${'<b>'+L.length+'</b>'}<span>Normas nuevas</span></button>
+    ${['prom','tac','plazo','veto','hcd'].map(c=>`<button type="button" class="st-${c}" aria-pressed="${F===c}" data-f="${c}"><b>${cuenta(c)}</b><span>${GR[c]}</span></button>`).join('')}
   </div>
-  <div class="nov-sec"><h3>Sancionadas en el último mes</h3><span>${um.length} ordenanza${um.length===1?'':'s'}</span></div>
+  <div class="nov-sec"><h3>Sancionadas en el último mes</h3><span>${um.length} norma${um.length===1?'':'s'}</span></div>
   ${um.length?sesiones(um):'<p class="nov-vacio">No hay ordenanzas sancionadas en los últimos 31 días'+(F?' con este estado':'')+'.</p>'}
-  ${resto.length?`<div class="nov-sec" style="margin-top:30px"><h3>Anteriores</h3><span>desde el ${fd(L[L.length-1].fs)}</span></div>${sesiones(resto)}`:''}
+  ${resto.length?`<div class="nov-sec" style="margin-top:30px"><h3>Anteriores</h3><span>${resto0.length} norma${resto0.length===1?'':'s'}</span></div>${sesiones(resto)}`:''}
+  ${ocultas?`<button type="button" class="nov-mas" data-mas="1">Mostrar ${ocultas} más, de sesiones anteriores</button>`:''}
   <div class="nov-ley">
     <div><span class="nov-chip st-prom">Promulgada</span><br>El Ejecutivo dictó el decreto de promulgación y se publicó en el Boletín Oficial Municipal.</div>
     <div><span class="nov-chip st-tac">Promulgada de hecho</span><br>Pasaron los diez días hábiles sin veto (art. 108 inc. 2, Decreto-Ley 6769/58). Se indica «presunta» mientras no aparezca el acto en el Boletín.</div>
     <div><span class="nov-chip st-plazo plazo">En plazo</span><br>El Ejecutivo todavía puede promulgarla o vetarla. El plazo corre desde la notificación; la fecha es una estimación.</div>
     <div><span class="nov-chip st-veto">Vetada</span><br>El Ejecutivo la observó total o parcialmente y vuelve al Concejo, que puede insistir con dos tercios.</div>
+    <div><span class="nov-chip st-hcd">Aprobada por el H.C.D.</span><br>Resoluciones y comunicaciones: rigen desde su aprobación y no pasan por promulgación.</div>
   </div>
-  <p class="nov-pie">Fuentes: textos sancionados entregados por la Secretaría del H.C.D. y decretos del Departamento Ejecutivo publicados en el
-    SIBOM (municipio 111). La consulta al Boletín se repite todos los días de manera automática. El Boletín de San Andrés de Giles se publica con varios
+  <p class="nov-pie">Fuentes: ordenanzas, resoluciones y comunicaciones publicadas en el sitio del Honorable Concejo Deliberante
+    (hcdsanandresdegiles.com.ar), textos entregados por su Secretaría y decretos del Departamento Ejecutivo publicados en el
+    SIBOM (municipio 111). Ambos sitios se consultan todos los días de manera automática. El Boletín de San Andrés de Giles se publica con varios
     meses de demora respecto de la firma de los decretos: una ordenanza puede figurar como «de hecho (presunta)» aunque ya tenga decreto, hasta que ese
     decreto se publique.</p>`;
 }
 root.addEventListener('click',ev=>{
   const f=ev.target.closest('[data-f]'); if(f){ F=f.dataset.f||null; pintar(); return; }
-  const a=ev.target.closest('[data-ab]'); if(a){ const [n,y]=a.dataset.ab.split('|'); abrir('ord',+n,+y); return; }
+  if(ev.target.closest('[data-mas]')){ MAS=true; pintar(); return; }
+  const a=ev.target.closest('[data-ab]'); if(a){ const [t,n,y]=a.dataset.ab.split('|'); abrir(t,+n,+y); return; }
   const g=ev.target.closest('[data-go]'); if(g){ const [t,n]=g.dataset.go.split('|');
     const efy=(N.efectos||[]).find(x=>x.t===t&&x.n===+n); abrir(t,+n,efy?efy.y:null); }
 });

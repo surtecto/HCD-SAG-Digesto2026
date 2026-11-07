@@ -23,19 +23,20 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Leer ordenanzas nuevas y consultar el Boletín Oficial Municipal
+      - run: pip install pypdf
+      - name: Leer ordenanzas nuevas, consultar el sitio del H.C.D. y el Boletín Oficial Municipal
         run: python herramientas/actualizar_novedades.py
       - name: Publicar si hubo cambios
         run: |
           git config user.name  "Digesto Gilense (automático)"
           git config user.email "actions@users.noreply.github.com"
-          git add digesto-novedades.js novedades/estado-sibom.json
+          git add digesto-novedades.js novedades/estado-sibom.json novedades/hcd-cache.json
           if git diff --cached --quiet; then
             echo "Sin cambios."
           else
