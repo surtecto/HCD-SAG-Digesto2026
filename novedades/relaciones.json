@@ -1,0 +1,33 @@
+{
+  "_nota": "Correcciones manuales. 'clasificacion' fija materia (rz) y categoría (c) por número de ordenanza. 'efectos' declara qué hace cada ordenanza nueva sobre normas anteriores; reemplaza lo que el actualizador detecta solo. 'promulgaciones' permite cargar a mano un decreto de promulgación o veto que todavía no está en el SIBOM.",
+  "clasificacion": {
+    "2831": ["V", "Arbolado público, espacios verdes y biodiversidad"],
+    "2832": ["III", "Planeamiento urbano y zonificación"],
+    "2833": ["XI", "Imposición de nombres a calles y caminos"],
+    "2834": ["XI", "Imposición de nombres a calles y caminos"],
+    "2835": ["VII", "Salud pública y hospital municipal"],
+    "2836": ["I", "Personal municipal y del Cuerpo"],
+    "2837": ["VII", "Salud pública y hospital municipal"],
+    "2838": ["III", "Dominio municipal, catastro y transferencias"],
+    "2839": ["VI", "Producción agropecuaria y ruralidad"],
+    "2840": ["VIII", "Tránsito, seguridad vial y estacionamiento"],
+    "2841": ["I", "Consejos, comisiones y organismos asesores"],
+    "2842": ["VIII", "Tránsito, seguridad vial y estacionamiento"],
+    "2843": ["XI", "Imposición de nombres a calles y caminos"],
+    "2844": ["XI", "Denominación de plazas, edificios y espacios"],
+    "2845": ["III", "Fraccionamientos, subdivisiones y apertura de calles"],
+    "2846": ["VIII", "Tránsito, seguridad vial y estacionamiento"],
+    "2847": ["X", "Adhesiones a leyes nacionales y provinciales"]
+  },
+  "efectos": {
+    "2831": [["ord", 34, 1981, "Deroga"], ["ord", 38, 1990, "Deroga"], ["ord", 1635, 2012, "Refiere a"]],
+    "2832": [["ord", 2755, 2025, "Modifica"]],
+    "2836": [["ord", 2783, 2025, "Modifica"], ["ord", 2821, 2026, "Refiere a"]],
+    "2838": [["ord", 2306, 2020, "Deroga parcialmente"]],
+    "2840": [["ord", 1770, 2014, "Modifica"], ["ord", 2617, 2023, "Refiere a"]],
+    "2842": [["ord", 2546, 2022, "Modifica"]],
+    "2844": [["ord", 1211, 2007, "Refiere a"]],
+    "2845": [["ord", 2452, 2021, "Modifica"]]
+  },
+  "promulgaciones": {}
+}
