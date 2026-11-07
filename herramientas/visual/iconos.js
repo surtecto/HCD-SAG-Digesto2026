@@ -1,0 +1,36 @@
+// Íconos «trazo pampeano»: 24×24, trazo 1.6, extremos redondeados, currentColor.
+const I = {
+  buscar:'<circle cx="10.5" cy="10.5" r="6.2"/><path d="m15.2 15.2 4.8 4.8"/>',
+  novedades:'<path d="M12 21v-8"/><path d="M12 13c0-3.6-2.6-6-6.5-6 0 3.6 2.6 6 6.5 6Z"/><path d="M12 15.5c0-3.4 2.4-5.6 6-5.6 0 3.4-2.4 5.6-6 5.6Z"/><path d="M8 21h8"/>',
+  indice:'<path d="M3 5.5c3-1.2 6-1 9 1 3-2 6-2.2 9-1V19c-3-1-6-.8-9 1-3-1.8-6-2-9-1Z"/><path d="M12 6.5V20"/>',
+  digesto:'<path d="M3.5 8.5h17V20h-17z"/><path d="M5.5 8.5V5h13v3.5"/><path d="M3.5 12.5h17"/><path d="M10 16.2h4"/>',
+  estadistica:'<path d="M4 20h16"/><path d="M7 17v-5M12 17V6.5M17 17V9.5"/>',
+  edicion:'<rect x="5.5" y="10.5" width="13" height="9.5" rx="1.6"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.2v2"/>',
+  alcance:'<rect x="3.5" y="5" width="17" height="15" rx="1.6"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2"/>',
+  word:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="m8.5 11 1.3 6 2.2-4.6 2.2 4.6 1.3-6"/>',
+  pdf:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12.5h6M9 15.5h6M9 18.5h3.5"/>',
+  imprimir:'<path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="1.6"/><path d="M7 14h10v6.5H7z"/>',
+  copiar:'<rect x="8.5" y="8.5" width="12" height="12" rx="1.6"/><path d="M15.5 8.5V5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h3.5"/>',
+  externo:'<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  flecha:'<path d="M4 12h16"/><path d="m14 6 6 6-6 6"/>',
+  cerrar:'<path d="M6 6l12 12M18 6 6 18"/>',
+  tabla:'<rect x="3.5" y="4.5" width="17" height="15" rx="1.6"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>',
+  filtro:'<path d="M4 5h16l-6.2 7.2V19l-3.6-1.8v-5Z"/>',
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.1"/>',
+  contraste:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17Z" fill="currentColor"/>',
+  // las once raíces temáticas
+  r1:'<path d="M3 9.5 12 4l9 5.5"/><path d="M3 9.5h18"/><path d="M5.5 9.5V18M9.8 9.5V18M14.2 9.5V18M18.5 9.5V18"/><path d="M3 20.5h18M4 18h16"/>',
+  r2:'<path d="M12 4v15"/><path d="M7.5 20.5h9"/><path d="M4.5 7.5h15"/><path d="m4.5 7.5-2.5 6h5Z"/><path d="m19.5 7.5-2.5 6h5Z"/><circle cx="12" cy="4" r=".6"/>',
+  r3:'<path d="M3.5 3.5h17v17h-17z"/><path d="M3.5 10h9.5V3.5M13 10v10.5M13 14.5h7.5M8 10v10.5"/>',
+  r4:'<path d="M2 17.5h20"/><path d="M3.5 17.5c0-5 3.8-8.5 8.5-8.5s8.5 3.5 8.5 8.5"/><path d="M7.5 17.5v-5.2M12 17.5V9M16.5 17.5v-5.2"/><path d="M5 20.5h14"/>',
+  r5:'<path d="M12 21v-6.5M12 17l-3.2-2.4M12 16l3.4-2.6"/><path d="M6.2 14.5C3.4 14.5 2.5 12 4 10.3 3.8 7.4 6.6 6 8.6 7 9.5 4.6 13 4 14.8 5.8c2.4-.8 5 .9 4.6 3.4 1.9 1 1.6 4.2-.8 5.3Z"/><path d="M8 21h8"/>',
+  r6:'<path d="M12 21V8"/><path d="M12 8c-1.7-.6-2.3-2.4-1.4-4 1.7.6 2.3 2.4 1.4 4ZM12 8c1.7-.6 2.3-2.4 1.4-4-1.7.6-2.3 2.4-1.4 4Z"/><path d="M12 12.5c-1.9-.4-2.8-2.1-2.2-3.8 1.9.4 2.8 2.1 2.2 3.8ZM12 12.5c1.9-.4 2.8-2.1 2.2-3.8-1.9.4-2.8 2.1-2.2 3.8Z"/><path d="M12 17c-1.9-.4-2.8-2.1-2.2-3.8 1.9.4 2.8 2.1 2.2 3.8ZM12 17c1.9-.4 2.8-2.1 2.2-3.8-1.9.4-2.8 2.1-2.2 3.8Z"/>',
+  r7:'<circle cx="8.5" cy="7.5" r="2.8"/><circle cx="16.5" cy="9" r="2.3"/><path d="M3 20c0-3.6 2.4-6 5.5-6s5.5 2.4 5.5 6"/><path d="M14.2 14.2c.7-.3 1.5-.5 2.3-.5 2.6 0 4.5 2 4.5 5.3"/>',
+  r8:'<rect x="8.5" y="2.5" width="7" height="13" rx="3.5"/><circle cx="12" cy="6" r="1.2"/><circle cx="12" cy="9" r="1.2"/><circle cx="12" cy="12" r="1.2"/><path d="M12 15.5v6M8.5 21.5h7"/>',
+  r9:'<path d="M3 15h13M4.5 15v4.5M14.5 15v4.5M3 12h13"/><path d="M19.5 21V7"/><path d="M17.5 7h4l-.8-2.5h-2.4Z"/><path d="M17.5 21h4"/>',
+  r10:'<path d="M3.5 5.5h11a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H8.5L5 17.5v-3H3.5A1.5 1.5 0 0 1 2 13V7a1.5 1.5 0 0 1 1.5-1.5Z"/><path d="M16 9.5h4.5A1.5 1.5 0 0 1 22 11v5.5a1.5 1.5 0 0 1-1.5 1.5H19v2.5L15.5 18H12a1.5 1.5 0 0 1-1.5-1.5V14.5"/>',
+  r11:'<path d="M7 21V3.5"/><path d="M7 5h11l2.5 3L18 11H7"/><path d="M7 13.5h9l2 2.5-2 2.5H7"/><path d="M4.5 21h5"/>',
+  r0:'<circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.6"/><path d="M12 16.6v.1"/>',
+};
+const svgIcono=(k,size=24)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+if(typeof module!=='undefined') module.exports={I,svgIcono};

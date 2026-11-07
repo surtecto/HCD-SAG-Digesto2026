@@ -1,0 +1,42 @@
+<svg class="pampa" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 210" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Horizonte pampeano: molino, monte de eucaliptos, ombú, alambrado, tranquera, la iglesia del pueblo y un galpón">
+  <circle class="pp-sol" cx="1268" cy="58" r="26"/>
+  <path class="pp-lejos" d="M0 168c120-10 240-14 380-8s250 10 400 2 300-14 420-6 180 8 240 6V210H0Z"/>
+  <!-- pueblo a lo lejos: iglesia de dos torres, casas, tanque -->
+  <g class="pp-medio">
+    <path d="M1010 166v-30h8v30M1062 166v-30h8v30"/>
+    <path d="M1018 166v-22l22-14 22 14v22Z"/>
+    <path d="M1008 136h12v-10h-12zM1060 136h12v-10h-12z"/>
+    <path d="M1009 126a5 6 0 0 1 10 0M1061 126a5 6 0 0 1 10 0"/>
+    <path d="M1014 120v-6M1066 120v-6M1012 116.5h4M1064 116.5h4"/>
+    <path d="M960 166v-14l10-7 10 7v14ZM982 166v-11h18v11ZM1082 166v-12l9-6 9 6v12ZM1102 166v-9h20v9Z"/>
+    <path d="M1140 166v-28M1152 166v-28M1134 138h24l-3-12h-18Z"/>
+  </g>
+  <!-- monte de eucaliptos -->
+  <g class="pp-monte">
+    <path d="M232 168c-8-30-2-62 10-76 12 14 16 46 8 76ZM262 168c-10-36-2-74 14-90 14 18 18 56 8 90ZM296 168c-8-28-2-58 10-70 12 12 14 42 8 70ZM322 168c-6-22 0-46 10-56 10 10 12 34 6 56ZM346 168c-6-18 0-38 8-46 8 8 10 28 4 46Z"/>
+  </g>
+  <g class="pp-trazo">
+    <!-- molino -->
+    <path d="M150 170 162 62M182 170 170 62M154 140h24M157 112h18M160 86h12M154 140l21-28M178 140l-21-28M157 112l15-26M175 112l-15-26"/>
+    <g class="pp-rueda"><circle cx="166" cy="56" r="20"/><circle cx="166" cy="56" r="3"/>
+      <path d="M166 36v40M146 56h40M151.9 41.9l28.2 28.2M180.1 41.9l-28.2 28.2M158.3 37.5l15.4 37M147.5 48.3l37 15.4M147.5 63.7l37-15.4M158.3 74.5l15.4-37"/></g>
+    <path d="M166 56l30-6 6 10-34 0"/>
+    <path d="M196 170v-26h34v26M196 144c0-4 34-4 34 0M196 156h34"/>
+    <!-- ombú -->
+    <path d="M556 170c4-14 6-30 4-44M584 170c-4-14-6-30-4-44M546 170c8-4 12-8 14-14M594 170c-8-4-12-8-14-14M570 126v-10M560 126l-14-10M580 126l14-10"/>
+    <path class="pp-copa" d="M512 112c-10-14 2-30 18-28 4-18 30-24 42-10 12-14 40-8 42 10 18-2 28 16 18 28 8 12-4 24-18 22-6 8-18 10-28 4-10 8-28 8-38 0-12 6-26 2-30-8-12 0-16-12-6-18Z"/>
+    <!-- alambrado y tranquera -->
+    <path d="M640 170v-30M680 170v-30M720 170v-30M760 170v-30M800 170v-30M840 170v-30M880 170v-30M640 146h240M640 156h240M640 165h240"/>
+    <path d="M884 170v-36M948 170v-36M884 140h64M884 152h64M884 164h64M884 164l64-24M916 140v24"/>
+    <!-- vacas -->
+    <g class="pp-vaca" transform="translate(440 0)"><path d="M10 152c0-6 4-9 12-9h22c7 0 11 3 11 9v6c0 3-2 4-4 4H14c-3 0-4-2-4-4Z"/><path d="M12 149c-4 1-7 5-7 10l2 6c1 2 4 2 5 0l2-6M8 151l-4-3"/><path d="M16 162v8M22 162v8M44 162v8M50 162v8M55 150c3 2 4 8 3 14"/></g>
+    <g class="pp-vaca" transform="translate(1356 4) scale(-.8 1) translate(-60 0)"><path d="M10 152c0-6 4-9 12-9h22c7 0 11 3 11 9v6c0 3-2 4-4 4H14c-3 0-4-2-4-4Z"/><path d="M12 149c-4 1-7 5-7 10l2 6c1 2 4 2 5 0l2-6M8 151l-4-3"/><path d="M16 162v8M22 162v8M44 162v8M50 162v8M55 150c3 2 4 8 3 14"/></g>
+    <!-- galpón -->
+    <path d="M1206 170v-34l32-18 32 18v34M1206 136h64M1226 170v-22h24v22M1238 148v22"/>
+    <!-- pastos -->
+    <path class="pp-pasto" d="M60 170c2-6 1-12-2-16M64 170c0-7 3-12 7-15M68 170c-1-5-4-9-8-11M418 170c2-6 1-12-2-16M422 170c0-7 3-12 7-15M612 170c1-6 0-10-3-13M616 170c0-6 3-10 6-12M988 172c1-5 0-9-3-12M992 172c0-5 2-9 5-11M1318 170c2-6 1-12-2-16M1322 170c0-7 3-12 7-15M1392 170c1-6 0-10-3-13"/>
+  </g>
+  <path class="pp-suelo" d="M0 170h1440"/>
+  <path class="pp-surco" d="M0 182h1440M0 194h1440"/>
+  <g class="pp-aves"><path class="pp-ave a1" d="M0 0q6-5 12 0q6-5 12 0"/><path class="pp-ave a2" d="M0 0q5-4 10 0q5-4 10 0"/><path class="pp-ave a3" d="M0 0q4-3 8 0q4-3 8 0"/></g>
+</svg>
