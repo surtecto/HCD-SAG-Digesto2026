@@ -138,6 +138,19 @@ def sumillas_digesto():
         return {}
 
 
+STOP_NOMBRES = set(AN.nrm(w) for w in """articulo decreta decreto visto considerando que por ello san andres giles municipal municipalidad intendente intendenta honorable concejo deliberante departamento ejecutivo secretaria secretario direccion director ordenanza ley provincia buenos aires nro dni legajo partido comuniquese registrese publiquese archivese dese sr sra senor senora cuit expediente fecha mes dia enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre tasa servicios urbanos hospital pesos con sin del de la las los el y en a al para su sus se le lo una un uno dos tres primero segundo partida parcial subparcial jurisdiccion programa actividad fuente financiamiento objeto gasto retribuciones cargo temporario personal planta permanente categoria clase modulo agente agentes""".split())
+
+
+def nombres(texto, visible):
+    """Palabras con mayúscula inicial (apellidos, instituciones, lugares) que no están en el texto visible: índice para el buscador."""
+    base = AN.nrm(visible); toks = set()
+    for w in re.findall(r"\b[A-ZÁÉÍÓÚÑÜ][A-Za-zÁÉÍÓÚÑÜáéíóúñü'\-]{2,}\b", texto or ''):
+        t = AN.nrm(w)
+        if t not in STOP_NOMBRES and t not in base:
+            toks.add(t)
+    return ' '.join(sorted(toks))
+
+
 # ---------------------------------------------------------------- SIBOM
 def boletines_nuevos(D):
     vistos = {str(b[2]) for b in D['bul']}
@@ -210,7 +223,8 @@ def main():
             for x in decs:
                 sub = modelo.predecir(x['v'] + ' ' + x['a1']); tema = D['subOf'][sub]
                 au = autoridad(x['f'])
-                D['R'].append([x['n'], x['y'], x['f'], tema, sub, 0, x['v'][:220] + ('…' if len(x['v']) > 220 else ''), num, x['c'], au])
+                txt = x['a1'] or x['v']
+                D['R'].append([x['n'], x['y'], x['f'], tema, sub, 0, txt[:220] + ('…' if len(txt) > 220 else ''), num, x['c'], au, nombres(x['v'] + ' ' + x['a1'], txt[:220])])
                 conocidos.add((x['n'], x['y']))
                 cls = normativo(x['a1'])
                 if cls:
