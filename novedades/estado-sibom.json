@@ -124,8 +124,9 @@
  ],
  "ultimo_boletin": "120º de San Andrés de Giles · 21/10/2026",
  "ultima_consulta": {
-  "fecha": "2026-11-15T17:05",
-  "ok": true
+  "fecha": "2026-11-16T20:25",
+  "ok": false,
+  "error": "The read operation timed out"
  },
  "decretos": {},
  "decretos_hasta": "2026-06-29"
